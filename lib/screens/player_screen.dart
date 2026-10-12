@@ -27,7 +27,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     final track = playerService.currentTrack;
     final activeLyricIndex = playerService.getActiveLyricIndex();
 
-    return Padding(
+    return SingleChildScrollView(
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
@@ -67,6 +67,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                     title: track.title,
                     artist: track.artist,
                     isPlaying: playerService.isPlaying,
+                    thumbnailUrl: track.thumbnailUrl,
                   )
                 else
                   JigglyLyricsView(
@@ -168,70 +169,91 @@ class _PlayerScreenState extends State<PlayerScreen> {
   }
 
   Widget _buildControlsBar(RetroThemeData theme, AudioPlayerService playerService) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        RetroButton(
-          label: 'EXPORT',
-          theme: theme,
-          fontSize: 9,
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                backgroundColor: theme.panel,
-                content: Text(
-                  'EXPORT TRACK TO STORAGE',
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    color: theme.ink,
-                  ),
-                ),
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.panel,
+        border: Border.all(color: theme.ink, width: 2),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              RetroButton(
+                label: 'ALTER',
+                theme: theme,
+                fontSize: 9,
+                backgroundColor: playerService.isShuffle ? theme.accentTeal : theme.background,
+                textColor: playerService.isShuffle ? const Color(0xFF0C1626) : theme.ink,
+                onTap: () => playerService.toggleShuffle(),
               ),
-            );
-          },
-        ),
-        RetroButton(
-          label: 'ALTER',
-          theme: theme,
-          fontSize: 9,
-          onTap: () => playerService.toggleShuffle(),
-        ),
-        RetroButton(
-          label: 'OOPS!',
-          theme: theme,
-          backgroundColor: theme.ink,
-          textColor: theme.background,
-          fontSize: 10,
-          onTap: () => playerService.previous(),
-        ),
-        RetroButton(
-          label: playerService.isPlaying ? 'PAUSE' : 'PLAY',
-          theme: theme,
-          backgroundColor: theme.accentCoral,
-          textColor: Colors.white,
-          fontSize: 11,
-          onTap: () => playerService.togglePlayPause(),
-        ),
-        RetroButton(
-          label: 'SKIP',
-          theme: theme,
-          fontSize: 9,
-          onTap: () => playerService.next(),
-        ),
-        VolumeStepper(
-          theme: theme,
-          volume: playerService.volume,
-          onVolumeChanged: (val) => playerService.setVolume(val),
-        ),
-        RetroButton(
-          label: 'STOP',
-          theme: theme,
-          backgroundColor: theme.panel,
-          textColor: theme.ink,
-          fontSize: 9,
-          onTap: () => playerService.obliterate(),
-        ),
-      ],
+              RetroButton(
+                label: 'OOPS!',
+                theme: theme,
+                backgroundColor: theme.ink,
+                textColor: theme.background,
+                fontSize: 10,
+                onTap: () => playerService.previous(),
+              ),
+              RetroButton(
+                label: playerService.isPlaying ? 'PAUSE' : 'PLAY',
+                theme: theme,
+                backgroundColor: theme.accentCoral,
+                textColor: Colors.white,
+                fontSize: 11,
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                onTap: () => playerService.togglePlayPause(),
+              ),
+              RetroButton(
+                label: 'SKIP',
+                theme: theme,
+                fontSize: 10,
+                onTap: () => playerService.next(),
+              ),
+              RetroButton(
+                label: 'STOP',
+                theme: theme,
+                backgroundColor: theme.panel,
+                textColor: theme.ink,
+                fontSize: 9,
+                onTap: () => playerService.obliterate(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              RetroButton(
+                label: 'EXPORT',
+                theme: theme,
+                fontSize: 8,
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                onTap: () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      backgroundColor: theme.panel,
+                      content: Text(
+                        'EXPORT TRACK TO STORAGE',
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          color: theme.ink,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              VolumeStepper(
+                theme: theme,
+                volume: playerService.volume,
+                onVolumeChanged: (val) => playerService.setVolume(val),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

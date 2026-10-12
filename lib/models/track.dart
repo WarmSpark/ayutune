@@ -8,6 +8,7 @@ class Track {
   final String genreTag;
   final String? audioUrl;
   final String? youtubeVideoId;
+  final String? thumbnailUrl;
   final bool isOffline;
   final List<LyricLine> lyrics;
 
@@ -19,6 +20,7 @@ class Track {
     required this.genreTag,
     this.audioUrl,
     this.youtubeVideoId,
+    this.thumbnailUrl,
     this.isOffline = false,
     this.lyrics = const [],
   });
@@ -31,6 +33,7 @@ class Track {
     String? genreTag,
     String? audioUrl,
     String? youtubeVideoId,
+    String? thumbnailUrl,
     bool? isOffline,
     List<LyricLine>? lyrics,
   }) {
@@ -42,6 +45,7 @@ class Track {
       genreTag: genreTag ?? this.genreTag,
       audioUrl: audioUrl ?? this.audioUrl,
       youtubeVideoId: youtubeVideoId ?? this.youtubeVideoId,
+      thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       isOffline: isOffline ?? this.isOffline,
       lyrics: lyrics ?? this.lyrics,
     );

@@ -83,10 +83,22 @@ class AudioPlayerService extends ChangeNotifier {
 
     try {
       final track = currentTrack;
+
+      _fetchLyricsInBackground(track);
+
       final resolvedUrl = await _innerTube.resolveAudioStreamUrl(track);
 
       if (resolvedUrl != null && resolvedUrl.isNotEmpty) {
-        await _player.setUrl(resolvedUrl);
+        if (track.youtubeVideoId != null && track.youtubeVideoId!.isNotEmpty) {
+          await _player.setUrl(
+            resolvedUrl,
+            headers: {
+              'User-Agent': 'com.google.android.youtube/20.10.38 (Linux; U; Android 11) gzip',
+            },
+          );
+        } else {
+          await _player.setUrl(resolvedUrl);
+        }
         await _player.play();
       }
     } catch (_) {
@@ -94,6 +106,16 @@ class AudioPlayerService extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  void _fetchLyricsInBackground(Track track) async {
+    try {
+      final lyrics = await _innerTube.fetchLyrics(track.title, track.artist);
+      if (lyrics.isNotEmpty && _currentIndex < _queue.length && _queue[_currentIndex].id == track.id) {
+        _queue[_currentIndex] = track.copyWith(lyrics: lyrics);
+        notifyListeners();
+      }
+    } catch (_) {}
   }
 
   Future<void> togglePlayPause() async {

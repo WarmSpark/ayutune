@@ -1,12 +1,14 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../theme/retro_theme.dart';
+import 'retro_thumbnail.dart';
 
 class CassetteDeck extends StatefulWidget {
   final RetroThemeData theme;
   final String title;
   final String artist;
   final bool isPlaying;
+  final String? thumbnailUrl;
 
   const CassetteDeck({
     super.key,
@@ -14,6 +16,7 @@ class CassetteDeck extends StatefulWidget {
     required this.title,
     required this.artist,
     required this.isPlaying,
+    this.thumbnailUrl,
   });
 
   @override
@@ -58,7 +61,7 @@ class _CassetteDeckState extends State<CassetteDeck>
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 170,
+      height: 175,
       decoration: BoxDecoration(
         color: widget.theme.background,
         border: Border.all(color: widget.theme.ink, width: 2.5),
@@ -76,32 +79,37 @@ class _CassetteDeckState extends State<CassetteDeck>
           children: [
             Container(
               width: double.infinity,
-              height: 52,
+              height: 56,
               decoration: BoxDecoration(
                 color: widget.theme.card,
                 border: Border.all(color: widget.theme.ink, width: 1.5),
               ),
-              child: Stack(
+              child: Row(
                 children: [
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: 10,
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: widget.theme.accentCoral,
-                        border: Border(
-                          right: BorderSide(color: widget.theme.ink, width: 1.5),
-                        ),
+                  Container(
+                    width: 8,
+                    height: double.infinity,
+                    decoration: BoxDecoration(
+                      color: widget.theme.accentCoral,
+                      border: Border(
+                        right: BorderSide(color: widget.theme.ink, width: 1.5),
                       ),
                     ),
                   ),
-                  Center(
+                  const SizedBox(width: 6),
+                  RetroThumbnail(
+                    url: widget.thumbnailUrl,
+                    width: 44,
+                    height: 44,
+                    theme: widget.theme,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      padding: const EdgeInsets.only(right: 8),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             widget.title,
@@ -109,7 +117,7 @@ class _CassetteDeckState extends State<CassetteDeck>
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontFamily: 'monospace',
-                              fontSize: 13,
+                              fontSize: 12,
                               fontWeight: FontWeight.bold,
                               color: widget.theme.ink,
                             ),
