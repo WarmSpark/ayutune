@@ -3,11 +3,15 @@ import 'package:provider/provider.dart';
 import 'screens/catalog_screen.dart';
 import 'screens/player_screen.dart';
 import 'services/audio_player_service.dart';
+import 'services/offline_service.dart';
+import 'services/playlist_service.dart';
 import 'theme/theme_provider.dart';
 import 'widgets/retro_window.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await OfflineService().init();
+  await PlaylistService().init();
   runApp(
     MultiProvider(
       providers: [

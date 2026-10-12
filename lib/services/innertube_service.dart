@@ -254,10 +254,143 @@ class InnerTubeService {
         }
       }
 
+      final autoUri = Uri.parse(
+          'https://www.jiosaavn.com/api.php?__call=autocomplete.get&query=${Uri.encodeComponent(cleanQuery)}&_format=json&_marker=0&ctx=android');
+      final autoResp = await http
+          .get(autoUri, headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+          .timeout(const Duration(seconds: 5));
+
+      if (autoResp.statusCode == 200) {
+        final autoData = jsonDecode(autoResp.body);
+        final songs = (autoData['songs']?['data'] as List?) ?? [];
+        if (songs.isNotEmpty) {
+          final pids = songs.map((s) => s['id']).take(10).join(',');
+          final detailsUri = Uri.parse(
+              'https://www.jiosaavn.com/api.php?__call=song.getDetails&pids=$pids&_format=json&_marker=0&ctx=android');
+          final detResp = await http
+              .get(detailsUri, headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+              .timeout(const Duration(seconds: 5));
+
+          if (detResp.statusCode == 200) {
+            final detData = jsonDecode(detResp.body);
+            final List<Track> autoTracks = [];
+            for (final songItem in songs) {
+              final sid = songItem['id']?.toString() ?? '';
+              final songObj = detData[sid];
+              if (songObj == null) continue;
+
+              final title = _cleanHtml(songObj['song']?.toString() ?? songItem['title']?.toString() ?? 'UNTITLED').toUpperCase();
+              final artist = _cleanHtml(songObj['primary_artists']?.toString() ?? songItem['description']?.toString() ?? 'UNKNOWN').toUpperCase();
+
+              final enc = songObj['encrypted_media_url']?.toString();
+              final preview = songObj['media_preview_url']?.toString();
+              final streamUrl = _decryptSaavnUrl(enc) ?? preview;
+              if (streamUrl == null || streamUrl.isEmpty) continue;
+
+              var image = songObj['image']?.toString() ?? songItem['image']?.toString() ?? '';
+              if (image.contains('150x150')) {
+                image = image.replaceAll('150x150', '500x500');
+              }
+
+              int durSecs = int.tryParse(songObj['duration']?.toString() ?? '180') ?? 180;
+
+              autoTracks.add(
+                Track(
+                  id: sid,
+                  title: title,
+                  artist: artist,
+                  duration: Duration(seconds: durSecs),
+                  genreTag: 'RETRO',
+                  audioUrl: streamUrl,
+                  thumbnailUrl: image.isNotEmpty ? image : null,
+                  isOffline: false,
+                  lyrics: [
+                    LyricLine(timestamp: Duration.zero, text: 'PLAYING: $title'),
+                    LyricLine(timestamp: const Duration(seconds: 4), text: 'ARTIST: $artist'),
+                    const LyricLine(timestamp: Duration(seconds: 8), text: 'SYNCHRONIZING RETRO LYRICS...'),
+                  ],
+                ),
+              );
+            }
+
+            if (autoTracks.isNotEmpty) {
+              return autoTracks;
+            }
+          }
+        }
+      }
+
       return _filterFallback(cleanQuery);
     } catch (_) {
       return _filterFallback(cleanQuery);
     }
+  }
+
+  Future<List<Track>> getSimilarTracks(Track track) async {
+    try {
+      if (track.id.isNotEmpty && !track.id.startsWith('default_') && !track.id.startsWith('sp_')) {
+        final uri = Uri.parse(
+            'https://www.jiosaavn.com/api.php?__call=reco.getreco&api_version=4&_format=json&_marker=0&ctx=android&pid=${track.id}');
+        final resp = await http
+            .get(uri, headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+            .timeout(const Duration(seconds: 5));
+
+        if (resp.statusCode == 200) {
+          final data = jsonDecode(resp.body);
+          final items = (data[track.id] as List?) ?? [];
+          final List<Track> recos = [];
+
+          for (final it in items) {
+            final sid = it['id']?.toString() ?? '';
+            if (sid.isEmpty || sid == track.id) continue;
+
+            final title = _cleanHtml(it['title']?.toString() ?? 'UNTITLED').toUpperCase();
+            final artist = _cleanHtml(it['subtitle']?.toString() ?? track.artist).toUpperCase();
+
+            final enc = it['more_info']?['encrypted_media_url']?.toString();
+            final streamUrl = _decryptSaavnUrl(enc);
+            if (streamUrl == null || streamUrl.isEmpty) continue;
+
+            var image = it['image']?.toString() ?? '';
+            if (image.contains('150x150')) {
+              image = image.replaceAll('150x150', '500x500');
+            }
+
+            int durSecs = int.tryParse(it['more_info']?['duration']?.toString() ?? '180') ?? 180;
+
+            recos.add(
+              Track(
+                id: sid,
+                title: title,
+                artist: artist,
+                duration: Duration(seconds: durSecs),
+                genreTag: 'AUTO',
+                audioUrl: streamUrl,
+                thumbnailUrl: image.isNotEmpty ? image : null,
+                isOffline: false,
+                lyrics: [
+                  LyricLine(timestamp: Duration.zero, text: 'PLAYING: $title'),
+                  LyricLine(timestamp: const Duration(seconds: 4), text: 'ARTIST: $artist'),
+                  const LyricLine(timestamp: Duration(seconds: 8), text: 'SYNCHRONIZING RETRO LYRICS...'),
+                ],
+              ),
+            );
+          }
+
+          if (recos.isNotEmpty) {
+            return recos;
+          }
+        }
+      }
+
+      final artistTracks = await searchTracks(track.artist);
+      final filtered = artistTracks.where((t) => t.id != track.id).toList();
+      if (filtered.isNotEmpty) {
+        return filtered;
+      }
+    } catch (_) {}
+
+    return _defaultLibrary.where((t) => t.id != track.id).toList();
   }
 
   List<Track> _filterFallback(String query) {
@@ -276,6 +409,21 @@ class InnerTubeService {
         contentType: 'audio/mp4',
       );
     }
+
+    try {
+      final searchResults = await searchTracks('${track.title} ${track.artist}');
+      if (searchResults.isNotEmpty) {
+        final first = searchResults.first;
+        if (first.audioUrl != null && first.audioUrl!.isNotEmpty) {
+          return ResolvedStream(
+            url: first.audioUrl!,
+            totalBytes: 0,
+            contentType: 'audio/mp4',
+          );
+        }
+      }
+    } catch (_) {}
+
     return null;
   }
 

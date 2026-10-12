@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/track.dart';
@@ -12,6 +13,7 @@ class AudioPlayerService extends ChangeNotifier {
   int _currentIndex = 0;
   bool _isLoading = false;
   bool _isShuffle = false;
+  bool _isAutoplay = true;
 
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<PlayerState>? _playerStateSubscription;
@@ -26,6 +28,7 @@ class AudioPlayerService extends ChangeNotifier {
   int get currentIndex => _currentIndex;
   bool get isLoading => _isLoading;
   bool get isShuffle => _isShuffle;
+  bool get isAutoplay => _isAutoplay;
   bool get isPlaying => _player.playing;
 
   Track get currentTrack {
@@ -66,10 +69,36 @@ class AudioPlayerService extends ChangeNotifier {
 
     _playerStateSubscription = _player.playerStateStream.listen((state) {
       if (state.processingState == ProcessingState.completed) {
-        next();
+        _handleTrackCompleted();
       }
       notifyListeners();
     });
+  }
+
+  Future<void> _handleTrackCompleted() async {
+    if (_currentIndex < _queue.length - 1) {
+      await next();
+    } else if (_isAutoplay) {
+      await _autoplaySimilar();
+    } else {
+      _currentIndex = 0;
+      await _loadAndPlayCurrent();
+    }
+  }
+
+  Future<void> _autoplaySimilar() async {
+    try {
+      final similarTracks = await _innerTube.getSimilarTracks(currentTrack);
+      if (similarTracks.isNotEmpty) {
+        final nextTrack = similarTracks.first;
+        _queue.add(nextTrack);
+        _currentIndex = _queue.length - 1;
+        await _loadAndPlayCurrent();
+        return;
+      }
+    } catch (_) {}
+
+    await next();
   }
 
   Future<void> playTrack(Track track) async {
@@ -89,6 +118,13 @@ class AudioPlayerService extends ChangeNotifier {
     await _loadAndPlayCurrent();
   }
 
+  Future<void> playQueue(List<Track> newTracks, {int startIndex = 0}) async {
+    if (newTracks.isEmpty) return;
+    _queue = List.from(newTracks);
+    _currentIndex = startIndex.clamp(0, _queue.length - 1);
+    await _loadAndPlayCurrent();
+  }
+
   Future<void> _loadAndPlayCurrent() async {
     _isLoading = true;
     notifyListeners();
@@ -97,13 +133,20 @@ class AudioPlayerService extends ChangeNotifier {
       final track = currentTrack;
       _fetchLyricsInBackground(track);
 
-      final streamData = await _innerTube.resolveAudioStream(track);
-
-      if (streamData != null) {
-        await _player.setAudioSource(
-          AudioSource.uri(Uri.parse(streamData.url)),
-        );
+      if (track.isOffline && track.audioUrl != null && File(track.audioUrl!).existsSync()) {
+        await _player.setAudioSource(AudioSource.file(track.audioUrl!));
         await _player.play();
+      } else {
+        final streamData = await _innerTube.resolveAudioStream(track);
+        if (streamData != null) {
+          if (track.audioUrl == null || track.audioUrl!.isEmpty) {
+            _queue[_currentIndex] = track.copyWith(audioUrl: streamData.url);
+          }
+          await _player.setAudioSource(
+            AudioSource.uri(Uri.parse(streamData.url)),
+          );
+          await _player.play();
+        }
       }
     } catch (_) {
     } finally {
@@ -113,6 +156,7 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   void _fetchLyricsInBackground(Track track) async {
+    if (track.lyrics.length > 3) return;
     try {
       final lyrics = await _innerTube.fetchLyrics(track.title, track.artist);
       if (lyrics.isNotEmpty &&
@@ -169,6 +213,10 @@ class AudioPlayerService extends ChangeNotifier {
       if (_currentIndex < _queue.length - 1) {
         _currentIndex++;
       } else {
+        if (_isAutoplay) {
+          await _autoplaySimilar();
+          return;
+        }
         _currentIndex = 0;
       }
     }
@@ -177,6 +225,11 @@ class AudioPlayerService extends ChangeNotifier {
 
   void toggleShuffle() {
     _isShuffle = !_isShuffle;
+    notifyListeners();
+  }
+
+  void toggleAutoplay() {
+    _isAutoplay = !_isAutoplay;
     notifyListeners();
   }
 
