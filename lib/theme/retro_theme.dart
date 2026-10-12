@@ -6,6 +6,8 @@ enum RetroPaletteType {
   gameBoy,
   macintoshMono,
   amberCrt,
+  synthwave,
+  custom,
 }
 
 class RetroThemeData {
@@ -34,6 +36,34 @@ class RetroThemeData {
     required this.accentTeal,
     required this.accentYellow,
   });
+
+  factory RetroThemeData.custom({
+    required Color primary,
+    required Color secondary,
+    required Color accent,
+    String name = 'Custom Tape',
+  }) {
+    final isDark = primary.computeLuminance() < 0.5;
+    final ink = isDark ? const Color(0xFFFAF6EE) : const Color(0xFF0A0A0A);
+    final inkDim = isDark ? ink.withValues(alpha: 0.7) : ink.withValues(alpha: 0.65);
+    final inkMuted = isDark ? ink.withValues(alpha: 0.4) : ink.withValues(alpha: 0.35);
+
+    return RetroThemeData(
+      name: name,
+      type: RetroPaletteType.custom,
+      background: primary,
+      panel: secondary,
+      card: isDark
+          ? Color.alphaBlend(Colors.white.withValues(alpha: 0.08), secondary)
+          : Color.alphaBlend(Colors.black.withValues(alpha: 0.05), secondary),
+      ink: ink,
+      inkDim: inkDim,
+      inkMuted: inkMuted,
+      accentCoral: accent,
+      accentTeal: isDark ? const Color(0xFF00F0FF) : accent,
+      accentYellow: const Color(0xFFFFD166),
+    );
+  }
 
   static const RetroThemeData deepNavy = RetroThemeData(
     name: 'Deep Navy',
@@ -105,11 +135,26 @@ class RetroThemeData {
     accentYellow: Color(0xFFFFEE88),
   );
 
+  static const RetroThemeData synthwave = RetroThemeData(
+    name: 'Synthwave',
+    type: RetroPaletteType.synthwave,
+    background: Color(0xFF2A1B40),
+    panel: Color(0xFF392456),
+    card: Color(0xFF4A2F70),
+    ink: Color(0xFF00FFF5),
+    inkDim: Color(0xFFB862FF),
+    inkMuted: Color(0xFF7928CA),
+    accentCoral: Color(0xFFFF007F),
+    accentTeal: Color(0xFF00FFF5),
+    accentYellow: Color(0xFFFFE600),
+  );
+
   static List<RetroThemeData> get allThemes => [
     deepNavy,
     parchment,
     gameBoy,
     macintoshMono,
     amberCrt,
+    synthwave,
   ];
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:dart_des/dart_des.dart';
+import '../models/hit_album.dart';
 import '../models/lyric_line.dart';
 import '../models/track.dart';
 
@@ -17,150 +18,565 @@ class ResolvedStream {
 }
 
 class InnerTubeService {
-  final List<Track> _defaultLibrary = [
+  final List<Track> _top10WeeklyTracks = [
     const Track(
-      id: 'default_1',
-      title: 'MURALS ON CITY WALLS',
-      artist: 'THE WIGGLY BAND',
-      duration: Duration(minutes: 6, seconds: 12),
-      genreTag: 'LO-FI',
-      isOffline: true,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=400',
-      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',
-      lyrics: [
-        LyricLine(timestamp: Duration(seconds: 0), text: '(VINYL BEATS ROLLING IN...)'),
-        LyricLine(timestamp: Duration(seconds: 10), text: 'SPRAY PAINT DRIPPING ON THE CONCRETE LANE'),
-        LyricLine(timestamp: Duration(seconds: 25), text: 'MURALS ON CITY WALLS'),
-        LyricLine(timestamp: Duration(seconds: 40), text: 'THEN HE IS PULLING ME IN'),
-        LyricLine(timestamp: Duration(seconds: 60), text: 'COLORS DANCING IN THE MORNING LIGHT'),
-        LyricLine(timestamp: Duration(seconds: 80), text: 'WALKING PAST THE SHADOWS OF THE NIGHT'),
-        LyricLine(timestamp: Duration(seconds: 105), text: 'UNDERNEATH AN UMBRELLA IN BLACK AND WHITE'),
-        LyricLine(timestamp: Duration(seconds: 130), text: 'STEP BY STEP DOWN THE VINTAGE STAIRS'),
-        LyricLine(timestamp: Duration(seconds: 160), text: 'ELECTRIC ECHOES PLAYING IN THE AIR'),
-      ],
+      id: 'VaNhRJHr',
+      title: 'DIE WITH A SMILE',
+      artist: 'LADY GAGA, BRUNO MARS',
+      duration: Duration(minutes: 4, seconds: 11),
+      genreTag: 'TOP 10',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/060/Die-With-A-Smile-English-2024-20240816103634-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyCGZR06gaKffrem8wE1U/IMmorGBddTA3ePxCVrcJLdRXpP/tIcakyxw7tS9a8Gtq',
+      lyrics: [],
     ),
     const Track(
-      id: 'default_2',
-      title: 'WHEN HE IS PULLING ME IN',
-      artist: 'LO-FI UMBRELLA DUO',
-      duration: Duration(minutes: 7, seconds: 5),
-      genreTag: 'LO-FI',
-      isOffline: true,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=400',
-      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',
-      lyrics: [
-        LyricLine(timestamp: Duration(seconds: 0), text: '(CHIPTUNE ACOUSTIC STRUMMING)'),
-        LyricLine(timestamp: Duration(seconds: 15), text: 'RAINDROPS TAPPING ON THE PAVEMENT TILES'),
-        LyricLine(timestamp: Duration(seconds: 35), text: 'SHARED AN UMBRELLA, WALKED FOR MILES'),
-        LyricLine(timestamp: Duration(seconds: 60), text: 'WHEN HE IS PULLING ME IN'),
-        LyricLine(timestamp: Duration(seconds: 85), text: 'NEVER LET THE VINTAGE RECORD END'),
-        LyricLine(timestamp: Duration(seconds: 120), text: 'TWO SILHOUETTE DREAMS AROUND THE BEND'),
-      ],
+      id: 'uNWdki50',
+      title: 'APT.',
+      artist: 'ROSE, BRUNO MARS',
+      duration: Duration(minutes: 2, seconds: 49),
+      genreTag: 'TOP 10',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/138/APT-English-2024-20241204043232-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyrPDnaSftxiGT3aLAwJMLSoBfK9aX00Tuy+wg9M7tuJIGv2BO0+49oRw7tS9a8Gtq',
+      lyrics: [],
     ),
     const Track(
-      id: 'default_3',
-      title: 'RAINY AFTERNOON STAIRS',
-      artist: 'PIXEL CADENCE',
-      duration: Duration(minutes: 5, seconds: 43),
-      genreTag: 'LO-FI',
-      isOffline: true,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=400',
-      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',
-      lyrics: [
-        LyricLine(timestamp: Duration(seconds: 0), text: '(SUB-BASS RUMBLE AND TAPE HISS)'),
-        LyricLine(timestamp: Duration(seconds: 20), text: 'SITTING ON THE COLD STONE STAIR'),
-        LyricLine(timestamp: Duration(seconds: 45), text: 'PURPLE SCHOOLBAG, DAMP CHILLY AIR'),
-        LyricLine(timestamp: Duration(seconds: 75), text: 'LOOKING FOR AN 8-BIT SILVER LINING'),
-        LyricLine(timestamp: Duration(seconds: 110), text: 'WHILE THE CLOCK KEEPS RETRO TIMING'),
-      ],
+      id: 'JR8ew5Yw',
+      title: 'BIRDS OF A FEATHER',
+      artist: 'BILLIE EILISH',
+      duration: Duration(minutes: 3, seconds: 30),
+      genreTag: 'TOP 10',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/707/HIT-ME-HARD-AND-SOFT-English-2024-20240517063536-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyCj3kCFHZmBd3rXivMuxf3sdQvTTi+C/DtCwhwGmNiaIvWDkv7Mlhgxw7tS9a8Gtq',
+      lyrics: [],
     ),
     const Track(
-      id: 'default_4',
-      title: '8-BIT COFFEE SHOP',
-      artist: 'CHIP-HOP RECORDS',
-      duration: Duration(minutes: 5, seconds: 2),
-      genreTag: '8-BIT',
-      isOffline: true,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=400',
-      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',
-      lyrics: [
-        LyricLine(timestamp: Duration(seconds: 0), text: '(ESPRESSO MACHINE AND GAME BOY ARPEGGIOS)'),
-        LyricLine(timestamp: Duration(seconds: 15), text: 'PIXEL ART FOAM ON A WARM MUG CUP'),
-        LyricLine(timestamp: Duration(seconds: 40), text: 'REWIND THE TAPE, NEVER GIVING UP'),
-        LyricLine(timestamp: Duration(seconds: 70), text: 'DITHERED SUNLIGHT THROUGH THE CAFE GLASS'),
-      ],
+      id: 'Paem2Kf1',
+      title: 'STARBOY',
+      artist: 'THE WEEKND, DAFT PUNK',
+      duration: Duration(minutes: 3, seconds: 50),
+      genreTag: 'TOP 10',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/372/Starboy-English-2016-20261007033842-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyuDdkCYGTsUDGOJFvCwxSUbmixxFc3paAM0N6pUZXPr/3abR9yPQFuRw7tS9a8Gtq',
+      lyrics: [],
     ),
     const Track(
-      id: 'default_5',
-      title: 'MIDNIGHT HIGHWAY 1986',
-      artist: 'NEON DRIFT',
-      duration: Duration(minutes: 5, seconds: 53),
-      genreTag: 'SYNTH',
-      isOffline: true,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=400',
-      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',
-      lyrics: [
-        LyricLine(timestamp: Duration(seconds: 0), text: '(ANALOG SYNTH ARPEGGIO PULSE)'),
-        LyricLine(timestamp: Duration(seconds: 20), text: 'HEADLIGHTS SLICING THROUGH THE COASTAL FOG'),
-        LyricLine(timestamp: Duration(seconds: 50), text: 'CASSETTE DECK PLAYING IN A MIDNIGHT LOG'),
-        LyricLine(timestamp: Duration(seconds: 90), text: 'TACHOMETER GLOWING NEON GOLD'),
-        LyricLine(timestamp: Duration(seconds: 130), text: 'STORIES THAT THE RETRO HIGHWAY TOLD'),
-      ],
+      id: 'X031nLVY',
+      title: '505',
+      artist: 'ARCTIC MONKEYS',
+      duration: Duration(minutes: 4, seconds: 13),
+      genreTag: 'TOP 10',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/858/Favourite-Worst-Nightmare-English-2007-20230426182106-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyz0EQLoyvUHZwSWcm/wBwCRD+rnZpEsNLggPEvcMi5ZLmlDYREmUVUBw7tS9a8Gtq',
+      lyrics: [],
     ),
     const Track(
-      id: 'default_6',
-      title: 'KYOTO PAPER CRANES',
-      artist: 'ORIGAMI SOUND',
-      duration: Duration(minutes: 6, seconds: 12),
-      genreTag: 'LO-FI',
-      isOffline: true,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400',
-      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',
-      lyrics: [
-        LyricLine(timestamp: Duration(seconds: 0), text: '(KOTO PLUCKS AND VINYL RAIN AMBIANCE)'),
-        LyricLine(timestamp: Duration(seconds: 25), text: 'FOLDED PAPER WINGS AGAINST THE SKY'),
-        LyricLine(timestamp: Duration(seconds: 60), text: 'WATCHING ANCIENT TEMPLE SHADOWS FLY'),
-        LyricLine(timestamp: Duration(seconds: 100), text: 'BAMBOO LANTERNS SOFTLY ALIGHT'),
-        LyricLine(timestamp: Duration(seconds: 140), text: 'WHISPERS DRIFTING INTO KYOTO NIGHT'),
-      ],
+      id: 'iE8z2T-c',
+      title: 'I WANNA BE YOURS',
+      artist: 'ARCTIC MONKEYS',
+      duration: Duration(minutes: 3, seconds: 3),
+      genreTag: 'TOP 10',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/795/AM-English-2013-20240402165515-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyPcN+8EbIZsfTDWD9VWGwA4lGR4i8vmIQnRE93NzlvsR3Hz7a0ZWayBw7tS9a8Gtq',
+      lyrics: [],
     ),
     const Track(
-      id: 'default_7',
-      title: 'SUBWAY ECHOES',
-      artist: 'UNDERGROUND TAPE CLUB',
-      duration: Duration(minutes: 7, seconds: 5),
-      genreTag: 'LO-FI',
-      isOffline: true,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400',
-      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3',
-      lyrics: [
-        LyricLine(timestamp: Duration(seconds: 0), text: '(ELECTRIC TRAIN RUMBLE AND TRACK CLICK)'),
-        LyricLine(timestamp: Duration(seconds: 18), text: 'FLUORESCENT BUZZ ALONG PLATFORM FOUR'),
-        LyricLine(timestamp: Duration(seconds: 48), text: 'SLIDING METAL ON THE SUBWAY DOOR'),
-        LyricLine(timestamp: Duration(seconds: 88), text: 'LOST IN TRANSIT WITH HEADPHONES ON'),
-        LyricLine(timestamp: Duration(seconds: 125), text: 'WAITING FOR THE MORNING NEON DAWN'),
-      ],
+      id: 'fW-Mxsnu',
+      title: 'BLINDING LIGHTS',
+      artist: 'THE WEEKND',
+      duration: Duration(minutes: 3, seconds: 20),
+      genreTag: 'TOP 10',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/077/After-Hours-English-2020-20260804045014-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyF/c5nqlFTXM0C74GbTF9AaylMpcN37HtcTaLl9ufWl/TC2QaaKAJJBw7tS9a8Gtq',
+      lyrics: [],
     ),
     const Track(
-      id: 'default_8',
-      title: 'CRT MIDNIGHT STATIC',
-      artist: 'CATHODE GLITCH',
-      duration: Duration(minutes: 5, seconds: 43),
-      genreTag: '8-BIT',
-      isOffline: true,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1520523839898-50712825e617?w=400',
-      audioUrl: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3',
-      lyrics: [
-        LyricLine(timestamp: Duration(seconds: 0), text: '(HIGH FREQUENCY HUM AND LO-FI BEAT)'),
-        LyricLine(timestamp: Duration(seconds: 20), text: 'CHANNEL 3 FLICKERING SNOW AND NOISE'),
-        LyricLine(timestamp: Duration(seconds: 55), text: 'NOSTALGIC MEMORIES OF RETRO JOYS'),
-        LyricLine(timestamp: Duration(seconds: 95), text: 'CATHODE RAY DREAMS IN VIOLET LIGHT'),
-        LyricLine(timestamp: Duration(seconds: 135), text: 'STATIC GLOW KEEPING WATCH TONIGHT'),
+      id: '8Ti1DvzG',
+      title: 'SWEATER WEATHER',
+      artist: 'THE NEIGHBOURHOOD',
+      duration: Duration(minutes: 4, seconds: 0),
+      genreTag: 'TOP 10',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/834/I-Love-You--English-2013-20220323205211-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDy9hu3bS6NbvlfnPtd8idp5xvKSNTjf1XKoF3hhivPaFnfR1ZZxwRVsBw7tS9a8Gtq',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'It96yG1r',
+      title: 'AS IT WAS',
+      artist: 'HARRY STYLES',
+      duration: Duration(minutes: 2, seconds: 47),
+      genreTag: 'TOP 10',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/061/Harry-s-House-English-2022-20220518224913-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyafbGhocZIGEX7d4RweACgnR35n/+we01uAHyYcdfLt6G0e0zD5yAnBw7tS9a8Gtq',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'BeXBcbVK',
+      title: 'BELIEVER',
+      artist: 'IMAGINE DRAGONS',
+      duration: Duration(minutes: 3, seconds: 24),
+      genreTag: 'TOP 10',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/248/Evolve-English-2018-20260605220036-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDy3oAkJDMbq8VkXOZU65DcFdrDhsTWIRT7u/8vMld9DHecVMFCBmD5/Rw7tS9a8Gtq',
+      lyrics: [],
+    ),
+  ];
+
+  final List<HitAlbum> _hitAlbums = [
+    const HitAlbum(
+      id: 'alb_starboy',
+      title: 'STARBOY',
+      artist: 'THE WEEKND',
+      year: '2016',
+      thumbnailUrl: 'https://c.saavncdn.com/372/Starboy-English-2016-20261007033842-500x500.webp',
+      tracks: [
+        Track(
+          id: 'Paem2Kf1',
+          title: 'STARBOY',
+          artist: 'THE WEEKND, DAFT PUNK',
+          duration: Duration(minutes: 3, seconds: 50),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/372/Starboy-English-2016-20261007033842-500x500.webp',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyuDdkCYGTsUDGOJFvCwxSUbmixxFc3paAM0N6pUZXPr/3abR9yPQFuRw7tS9a8Gtq',
+          lyrics: [],
+        ),
+        Track(
+          id: 'starboy_rem',
+          title: 'REMINDER',
+          artist: 'THE WEEKND',
+          duration: Duration(minutes: 3, seconds: 38),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/372/Starboy-English-2016-20261007033842-500x500.webp',
+          lyrics: [],
+        ),
+        Track(
+          id: 'starboy_dfy',
+          title: 'DIE FOR YOU',
+          artist: 'THE WEEKND',
+          duration: Duration(minutes: 4, seconds: 20),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/372/Starboy-English-2016-20261007033842-500x500.webp',
+          lyrics: [],
+        ),
+        Track(
+          id: 'starboy_pm',
+          title: 'PARTY MONSTER',
+          artist: 'THE WEEKND',
+          duration: Duration(minutes: 4, seconds: 3),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/372/Starboy-English-2016-20261007033842-500x500.webp',
+          lyrics: [],
+        ),
+      ],
+    ),
+    const HitAlbum(
+      id: 'alb_am',
+      title: 'AM',
+      artist: 'ARCTIC MONKEYS',
+      year: '2013',
+      thumbnailUrl: 'https://c.saavncdn.com/795/AM-English-2013-20240402165515-500x500.webp',
+      tracks: [
+        Track(
+          id: 'iE8z2T-c',
+          title: 'I WANNA BE YOURS',
+          artist: 'ARCTIC MONKEYS',
+          duration: Duration(minutes: 3, seconds: 3),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/795/AM-English-2013-20240402165515-500x500.webp',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyPcN+8EbIZsfTDWD9VWGwA4lGR4i8vmIQnRE93NzlvsR3Hz7a0ZWayBw7tS9a8Gtq',
+          lyrics: [],
+        ),
+        Track(
+          id: 'am_diwk',
+          title: 'DO I WANNA KNOW?',
+          artist: 'ARCTIC MONKEYS',
+          duration: Duration(minutes: 4, seconds: 32),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/795/AM-English-2013-20240402165515-500x500.webp',
+          lyrics: [],
+        ),
+        Track(
+          id: 'am_rumine',
+          title: 'R U MINE?',
+          artist: 'ARCTIC MONKEYS',
+          duration: Duration(minutes: 3, seconds: 21),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/795/AM-English-2013-20240402165515-500x500.webp',
+          lyrics: [],
+        ),
+        Track(
+          id: 'am_arabella',
+          title: 'ARABELLA',
+          artist: 'ARCTIC MONKEYS',
+          duration: Duration(minutes: 3, seconds: 27),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/795/AM-English-2013-20240402165515-500x500.webp',
+          lyrics: [],
+        ),
+      ],
+    ),
+    const HitAlbum(
+      id: 'alb_evolve',
+      title: 'EVOLVE',
+      artist: 'IMAGINE DRAGONS',
+      year: '2017',
+      thumbnailUrl: 'https://c.saavncdn.com/248/Evolve-English-2018-20260605220036-500x500.webp',
+      tracks: [
+        Track(
+          id: 'BeXBcbVK',
+          title: 'BELIEVER',
+          artist: 'IMAGINE DRAGONS',
+          duration: Duration(minutes: 3, seconds: 24),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/248/Evolve-English-2018-20260605220036-500x500.webp',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDy3oAkJDMbq8VkXOZU65DcFdrDhsTWIRT7u/8vMld9DHecVMFCBmD5/Rw7tS9a8Gtq',
+          lyrics: [],
+        ),
+        Track(
+          id: 'ev_thunder',
+          title: 'THUNDER',
+          artist: 'IMAGINE DRAGONS',
+          duration: Duration(minutes: 3, seconds: 7),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/248/Evolve-English-2018-20260605220036-500x500.webp',
+          lyrics: [],
+        ),
+        Track(
+          id: 'ev_wit',
+          title: 'WHATEVER IT TAKES',
+          artist: 'IMAGINE DRAGONS',
+          duration: Duration(minutes: 3, seconds: 21),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/248/Evolve-English-2018-20260605220036-500x500.webp',
+          lyrics: [],
+        ),
+        Track(
+          id: 'ev_wtw',
+          title: 'WALKING THE WIRE',
+          artist: 'IMAGINE DRAGONS',
+          duration: Duration(minutes: 3, seconds: 52),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/248/Evolve-English-2018-20260605220036-500x500.webp',
+          lyrics: [],
+        ),
+      ],
+    ),
+    const HitAlbum(
+      id: 'alb_afterhours',
+      title: 'AFTER HOURS',
+      artist: 'THE WEEKND',
+      year: '2020',
+      thumbnailUrl: 'https://c.saavncdn.com/077/After-Hours-English-2020-20260804045014-500x500.webp',
+      tracks: [
+        Track(
+          id: 'fW-Mxsnu',
+          title: 'BLINDING LIGHTS',
+          artist: 'THE WEEKND',
+          duration: Duration(minutes: 3, seconds: 20),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/077/After-Hours-English-2020-20260804045014-500x500.webp',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyF/c5nqlFTXM0C74GbTF9AaylMpcN37HtcTaLl9ufWl/TC2QaaKAJJBw7tS9a8Gtq',
+          lyrics: [],
+        ),
+        Track(
+          id: 'ah_syt',
+          title: 'SAVE YOUR TEARS',
+          artist: 'THE WEEKND',
+          duration: Duration(minutes: 3, seconds: 35),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/077/After-Hours-English-2020-20260804045014-500x500.webp',
+          lyrics: [],
+        ),
+        Track(
+          id: 'ah_iye',
+          title: 'IN YOUR EYES',
+          artist: 'THE WEEKND',
+          duration: Duration(minutes: 3, seconds: 57),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/077/After-Hours-English-2020-20260804045014-500x500.webp',
+          lyrics: [],
+        ),
+      ],
+    ),
+    const HitAlbum(
+      id: 'alb_hmhas',
+      title: 'HIT ME HARD AND SOFT',
+      artist: 'BILLIE EILISH',
+      year: '2024',
+      thumbnailUrl: 'https://c.saavncdn.com/707/HIT-ME-HARD-AND-SOFT-English-2024-20240517063536-500x500.webp',
+      tracks: [
+        Track(
+          id: 'JR8ew5Yw',
+          title: 'BIRDS OF A FEATHER',
+          artist: 'BILLIE EILISH',
+          duration: Duration(minutes: 3, seconds: 30),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/707/HIT-ME-HARD-AND-SOFT-English-2024-20240517063536-500x500.webp',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyCj3kCFHZmBd3rXivMuxf3sdQvTTi+C/DtCwhwGmNiaIvWDkv7Mlhgxw7tS9a8Gtq',
+          lyrics: [],
+        ),
+        Track(
+          id: 'b_lunch',
+          title: 'LUNCH',
+          artist: 'BILLIE EILISH',
+          duration: Duration(minutes: 2, seconds: 59),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/707/HIT-ME-HARD-AND-SOFT-English-2024-20240517063536-500x500.webp',
+          lyrics: [],
+        ),
+        Track(
+          id: 'b_chihiro',
+          title: 'CHIHIRO',
+          artist: 'BILLIE EILISH',
+          duration: Duration(minutes: 5, seconds: 3),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/707/HIT-ME-HARD-AND-SOFT-English-2024-20240517063536-500x500.webp',
+          lyrics: [],
+        ),
+      ],
+    ),
+    const HitAlbum(
+      id: 'alb_aashiqui2',
+      title: 'AASHIQUI 2',
+      artist: 'ARIJIT SINGH, MITHOON',
+      year: '2013',
+      thumbnailUrl: 'https://c.saavncdn.com/835/Aashiqui-2-Hindi-2013-20201215180126-500x500.webp',
+      tracks: [
+        Track(
+          id: 'a2_tumhiho',
+          title: 'TUM HI HO',
+          artist: 'ARIJIT SINGH',
+          duration: Duration(minutes: 4, seconds: 22),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/835/Aashiqui-2-Hindi-2013-20201215180126-500x500.webp',
+          lyrics: [],
+        ),
+        Track(
+          id: 'a2_sunnraha',
+          title: 'SUNN RAHA HAI',
+          artist: 'ANKIT TIWARI',
+          duration: Duration(minutes: 6, seconds: 30),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/835/Aashiqui-2-Hindi-2013-20201215180126-500x500.webp',
+          lyrics: [],
+        ),
+        Track(
+          id: 'a2_chahun',
+          title: 'CHAHUN MAIN YA NAA',
+          artist: 'ARIJIT SINGH, PALAK MUCHHAL',
+          duration: Duration(minutes: 5, seconds: 4),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/835/Aashiqui-2-Hindi-2013-20201215180126-500x500.webp',
+          lyrics: [],
+        ),
+      ],
+    ),
+    const HitAlbum(
+      id: 'alb_parachutes',
+      title: 'PARACHUTES',
+      artist: 'COLDPLAY',
+      year: '2000',
+      thumbnailUrl: 'https://c.saavncdn.com/829/Parachutes-English-2000-20240402164415-500x500.webp',
+      tracks: [
+        Track(
+          id: 'cp_yellow',
+          title: 'YELLOW',
+          artist: 'COLDPLAY',
+          duration: Duration(minutes: 4, seconds: 29),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/829/Parachutes-English-2000-20240402164415-500x500.webp',
+          lyrics: [],
+        ),
+        Track(
+          id: 'cp_shiver',
+          title: 'SHIVER',
+          artist: 'COLDPLAY',
+          duration: Duration(minutes: 4, seconds: 59),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/829/Parachutes-English-2000-20240402164415-500x500.webp',
+          lyrics: [],
+        ),
+        Track(
+          id: 'cp_trouble',
+          title: 'TROUBLE',
+          artist: 'COLDPLAY',
+          duration: Duration(minutes: 4, seconds: 30),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/829/Parachutes-English-2000-20240402164415-500x500.webp',
+          lyrics: [],
+        ),
       ],
     ),
   ];
 
-  List<Track> getDefaultTracks() => List.unmodifiable(_defaultLibrary);
+  final List<Track> _globalHits = [
+    const Track(
+      id: 'gh_heatwaves',
+      title: 'HEAT WAVES',
+      artist: 'GLASS ANIMALS',
+      duration: Duration(minutes: 3, seconds: 58),
+      genreTag: 'GLOBAL',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/279/Dreamland-English-2020-20200806041014-500x500.jpg',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'gh_stay',
+      title: 'STAY',
+      artist: 'THE KID LAROI, JUSTIN BIEBER',
+      duration: Duration(minutes: 2, seconds: 21),
+      genreTag: 'GLOBAL',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/492/Stay-English-2021-20210708043232-500x500.jpg',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'gh_sunflower',
+      title: 'SUNFLOWER',
+      artist: 'POST MALONE, SWAE LEE',
+      duration: Duration(minutes: 2, seconds: 38),
+      genreTag: 'GLOBAL',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/812/Spider-Man-Into-the-Spider-Verse-Soundtrack-English-2018-20181213031014-500x500.jpg',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'gh_shapeofyou',
+      title: 'SHAPE OF YOU',
+      artist: 'ED SHEERAN',
+      duration: Duration(minutes: 3, seconds: 53),
+      genreTag: 'GLOBAL',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/869/Shape-of-You-English-2017-500x500.jpg',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'gh_onedance',
+      title: 'ONE DANCE',
+      artist: 'DRAKE, WIZKID, KYLA',
+      duration: Duration(minutes: 2, seconds: 54),
+      genreTag: 'GLOBAL',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/978/Views-English-2016-500x500.jpg',
+      lyrics: [],
+    ),
+  ];
+
+  final List<Track> _synthwaveHits = [
+    const Track(
+      id: 'synth_midnight',
+      title: 'MIDNIGHT CITY',
+      artist: 'M83',
+      duration: Duration(minutes: 4, seconds: 3),
+      genreTag: 'SYNTH',
+      isOffline: false,
+      thumbnailUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=500',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'synth_nightcall',
+      title: 'NIGHTCALL',
+      artist: 'KAVINSKY',
+      duration: Duration(minutes: 4, seconds: 19),
+      genreTag: 'SYNTH',
+      isOffline: false,
+      thumbnailUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'synth_resonance',
+      title: 'RESONANCE',
+      artist: 'HOME',
+      duration: Duration(minutes: 3, seconds: 32),
+      genreTag: 'SYNTH',
+      isOffline: false,
+      thumbnailUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'synth_perfectgirl',
+      title: 'THE PERFECT GIRL',
+      artist: 'MAREUX',
+      duration: Duration(minutes: 3, seconds: 14),
+      genreTag: 'SYNTH',
+      isOffline: false,
+      thumbnailUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500',
+      lyrics: [],
+    ),
+  ];
+
+  final List<Track> _lofiHits = [
+    const Track(
+      id: 'lofi_snowman',
+      title: 'SNOWMAN',
+      artist: 'WYS',
+      duration: Duration(minutes: 3, seconds: 15),
+      genreTag: 'LO-FI',
+      isOffline: false,
+      thumbnailUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'lofi_affection',
+      title: 'AFFECTION',
+      artist: 'JINSANG',
+      duration: Duration(minutes: 2, seconds: 40),
+      genreTag: 'LO-FI',
+      isOffline: false,
+      thumbnailUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'lofi_coffee',
+      title: 'COFFEE',
+      artist: 'BEABADOOBEE',
+      duration: Duration(minutes: 2, seconds: 6),
+      genreTag: 'LO-FI',
+      isOffline: false,
+      thumbnailUrl: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=500',
+      lyrics: [],
+    ),
+  ];
+
+  List<Track> getDefaultTracks() => List.unmodifiable(_top10WeeklyTracks);
+  List<Track> getTop10WeeklyTracks() => List.unmodifiable(_top10WeeklyTracks);
+  List<HitAlbum> getHitAlbums() => List.unmodifiable(_hitAlbums);
+  List<Track> getGlobalTopHits() => List.unmodifiable(_globalHits);
+  List<Track> getRetroSynthwaveHits() => List.unmodifiable(_synthwaveHits);
+  List<Track> getLofiChillHits() => List.unmodifiable(_lofiHits);
 
   String _cleanHtml(String text) {
     return text
@@ -196,133 +612,158 @@ class InnerTubeService {
     }
 
     try {
-      final uri = Uri.parse(
-          'https://www.jiosaavn.com/api.php?__call=search.getResults&q=${Uri.encodeComponent(cleanQuery)}&_format=json&_marker=0&ctx=android&p=1&n=25');
-      final response = await http
-          .get(uri, headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
-          .timeout(const Duration(seconds: 6));
+      final futures = await Future.wait([
+        _searchViaAutocomplete(cleanQuery),
+        _searchViaGetResults(cleanQuery),
+      ]);
 
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        final results = (data['results'] as List?) ?? [];
-        final List<Track> tracks = [];
+      final autoResults = futures[0];
+      final getResults = futures[1];
 
-        for (final item in results) {
-          final id = item['id']?.toString() ?? '';
-          if (id.isEmpty) continue;
-
-          final title = _cleanHtml(item['song']?.toString() ?? item['title']?.toString() ?? 'UNTITLED').toUpperCase();
-          final artist = _cleanHtml(item['primary_artists']?.toString() ?? item['singers']?.toString() ?? 'UNKNOWN').toUpperCase();
-
-          final enc = item['encrypted_media_url']?.toString();
-          final preview = item['media_preview_url']?.toString();
-          final streamUrl = _decryptSaavnUrl(enc) ?? preview;
-          if (streamUrl == null || streamUrl.isEmpty) continue;
-
-          int durSecs = 180;
-          final rawDuration = item['duration'];
-          if (rawDuration != null) {
-            durSecs = int.tryParse(rawDuration.toString()) ?? 180;
-          }
-
-          var image = item['image']?.toString() ?? '';
-          if (image.contains('150x150')) {
-            image = image.replaceAll('150x150', '500x500');
-          }
-
-          tracks.add(
-            Track(
-              id: id,
-              title: title,
-              artist: artist,
-              duration: Duration(seconds: durSecs),
-              genreTag: (item['language']?.toString() ?? 'RETRO').toUpperCase(),
-              audioUrl: streamUrl,
-              thumbnailUrl: image.isNotEmpty ? image : null,
-              isOffline: false,
-              lyrics: [
-                LyricLine(timestamp: Duration.zero, text: 'PLAYING: $title'),
-                LyricLine(timestamp: const Duration(seconds: 4), text: 'ARTIST: $artist'),
-                const LyricLine(timestamp: Duration(seconds: 8), text: 'SYNCHRONIZING RETRO LYRICS...'),
-              ],
-            ),
-          );
-        }
-
-        if (tracks.isNotEmpty) {
-          return tracks;
+      final Map<String, Track> uniqueTracks = {};
+      for (final t in autoResults) {
+        uniqueTracks[t.id] = t;
+      }
+      for (final t in getResults) {
+        if (!uniqueTracks.containsKey(t.id)) {
+          uniqueTracks[t.id] = t;
         }
       }
 
-      final autoUri = Uri.parse(
-          'https://www.jiosaavn.com/api.php?__call=autocomplete.get&query=${Uri.encodeComponent(cleanQuery)}&_format=json&_marker=0&ctx=android');
-      final autoResp = await http
-          .get(autoUri, headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
-          .timeout(const Duration(seconds: 5));
-
-      if (autoResp.statusCode == 200) {
-        final autoData = jsonDecode(autoResp.body);
-        final songs = (autoData['songs']?['data'] as List?) ?? [];
-        if (songs.isNotEmpty) {
-          final pids = songs.map((s) => s['id']).take(10).join(',');
-          final detailsUri = Uri.parse(
-              'https://www.jiosaavn.com/api.php?__call=song.getDetails&pids=$pids&_format=json&_marker=0&ctx=android');
-          final detResp = await http
-              .get(detailsUri, headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
-              .timeout(const Duration(seconds: 5));
-
-          if (detResp.statusCode == 200) {
-            final detData = jsonDecode(detResp.body);
-            final List<Track> autoTracks = [];
-            for (final songItem in songs) {
-              final sid = songItem['id']?.toString() ?? '';
-              final songObj = detData[sid];
-              if (songObj == null) continue;
-
-              final title = _cleanHtml(songObj['song']?.toString() ?? songItem['title']?.toString() ?? 'UNTITLED').toUpperCase();
-              final artist = _cleanHtml(songObj['primary_artists']?.toString() ?? songItem['description']?.toString() ?? 'UNKNOWN').toUpperCase();
-
-              final enc = songObj['encrypted_media_url']?.toString();
-              final preview = songObj['media_preview_url']?.toString();
-              final streamUrl = _decryptSaavnUrl(enc) ?? preview;
-              if (streamUrl == null || streamUrl.isEmpty) continue;
-
-              var image = songObj['image']?.toString() ?? songItem['image']?.toString() ?? '';
-              if (image.contains('150x150')) {
-                image = image.replaceAll('150x150', '500x500');
-              }
-
-              int durSecs = int.tryParse(songObj['duration']?.toString() ?? '180') ?? 180;
-
-              autoTracks.add(
-                Track(
-                  id: sid,
-                  title: title,
-                  artist: artist,
-                  duration: Duration(seconds: durSecs),
-                  genreTag: 'RETRO',
-                  audioUrl: streamUrl,
-                  thumbnailUrl: image.isNotEmpty ? image : null,
-                  isOffline: false,
-                  lyrics: [
-                    LyricLine(timestamp: Duration.zero, text: 'PLAYING: $title'),
-                    LyricLine(timestamp: const Duration(seconds: 4), text: 'ARTIST: $artist'),
-                    const LyricLine(timestamp: Duration(seconds: 8), text: 'SYNCHRONIZING RETRO LYRICS...'),
-                  ],
-                ),
-              );
-            }
-
-            if (autoTracks.isNotEmpty) {
-              return autoTracks;
-            }
-          }
-        }
+      if (uniqueTracks.isNotEmpty) {
+        return uniqueTracks.values.toList();
       }
 
       return _filterFallback(cleanQuery);
     } catch (_) {
       return _filterFallback(cleanQuery);
+    }
+  }
+
+  Future<List<Track>> _searchViaGetResults(String cleanQuery) async {
+    try {
+      final uri = Uri.parse(
+          'https://www.jiosaavn.com/api.php?__call=search.getResults&q=${Uri.encodeComponent(cleanQuery)}&_format=json&_marker=0&ctx=android&p=1&n=25');
+      final response = await http
+          .get(uri, headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+          .timeout(const Duration(seconds: 8));
+
+      if (response.statusCode != 200) return [];
+      final data = jsonDecode(response.body);
+      final results = (data['results'] as List?) ?? [];
+      final List<Track> tracks = [];
+
+      for (final item in results) {
+        final id = item['id']?.toString() ?? '';
+        if (id.isEmpty) continue;
+
+        final title = _cleanHtml(item['song']?.toString() ?? item['title']?.toString() ?? 'UNTITLED').toUpperCase();
+        final artist = _cleanHtml(item['primary_artists']?.toString() ?? item['singers']?.toString() ?? 'UNKNOWN').toUpperCase();
+
+        final enc = item['encrypted_media_url']?.toString();
+        final preview = item['media_preview_url']?.toString();
+        final streamUrl = _decryptSaavnUrl(enc) ?? preview;
+        if (streamUrl == null || streamUrl.isEmpty) continue;
+
+        int durSecs = 180;
+        final rawDuration = item['duration'];
+        if (rawDuration != null) {
+          durSecs = int.tryParse(rawDuration.toString()) ?? 180;
+        }
+
+        var image = item['image']?.toString() ?? '';
+        if (image.contains('150x150')) {
+          image = image.replaceAll('150x150', '500x500');
+        }
+
+        tracks.add(
+          Track(
+            id: id,
+            title: title,
+            artist: artist,
+            duration: Duration(seconds: durSecs),
+            genreTag: (item['language']?.toString() ?? 'RETRO').toUpperCase(),
+            audioUrl: streamUrl,
+            thumbnailUrl: image.isNotEmpty ? image : null,
+            isOffline: false,
+            lyrics: [
+              LyricLine(timestamp: Duration.zero, text: 'PLAYING: $title'),
+              LyricLine(timestamp: const Duration(seconds: 4), text: 'ARTIST: $artist'),
+              const LyricLine(timestamp: Duration(seconds: 8), text: 'SYNCHRONIZING RETRO LYRICS...'),
+            ],
+          ),
+        );
+      }
+      return tracks;
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<List<Track>> _searchViaAutocomplete(String cleanQuery) async {
+    try {
+      final autoUri = Uri.parse(
+          'https://www.jiosaavn.com/api.php?__call=autocomplete.get&query=${Uri.encodeComponent(cleanQuery)}&_format=json&_marker=0&ctx=android');
+      final autoResp = await http
+          .get(autoUri, headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+          .timeout(const Duration(seconds: 8));
+
+      if (autoResp.statusCode != 200) return [];
+      final autoData = jsonDecode(autoResp.body);
+      final songs = (autoData['songs']?['data'] as List?) ?? [];
+      if (songs.isEmpty) return [];
+
+      final pids = songs.map((s) => s['id']).take(15).join(',');
+      final detailsUri = Uri.parse(
+          'https://www.jiosaavn.com/api.php?__call=song.getDetails&pids=$pids&_format=json&_marker=0&ctx=android');
+      final detResp = await http
+          .get(detailsUri, headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+          .timeout(const Duration(seconds: 8));
+
+      if (detResp.statusCode != 200) return [];
+      final detData = jsonDecode(detResp.body);
+      final List<Track> autoTracks = [];
+      for (final songItem in songs) {
+        final sid = songItem['id']?.toString() ?? '';
+        final songObj = detData[sid];
+        if (songObj == null) continue;
+
+        final title = _cleanHtml(songObj['song']?.toString() ?? songItem['title']?.toString() ?? 'UNTITLED').toUpperCase();
+        final artist = _cleanHtml(songObj['primary_artists']?.toString() ?? songItem['description']?.toString() ?? 'UNKNOWN').toUpperCase();
+
+        final enc = songObj['encrypted_media_url']?.toString();
+        final preview = songObj['media_preview_url']?.toString();
+        final streamUrl = _decryptSaavnUrl(enc) ?? preview;
+        if (streamUrl == null || streamUrl.isEmpty) continue;
+
+        var image = songObj['image']?.toString() ?? songItem['image']?.toString() ?? '';
+        if (image.contains('150x150')) {
+          image = image.replaceAll('150x150', '500x500');
+        }
+
+        int durSecs = int.tryParse(songObj['duration']?.toString() ?? '180') ?? 180;
+
+        autoTracks.add(
+          Track(
+            id: sid,
+            title: title,
+            artist: artist,
+            duration: Duration(seconds: durSecs),
+            genreTag: (songObj['language']?.toString() ?? 'RETRO').toUpperCase(),
+            audioUrl: streamUrl,
+            thumbnailUrl: image.isNotEmpty ? image : null,
+            isOffline: false,
+            lyrics: [
+              LyricLine(timestamp: Duration.zero, text: 'PLAYING: $title'),
+              LyricLine(timestamp: const Duration(seconds: 4), text: 'ARTIST: $artist'),
+              const LyricLine(timestamp: Duration(seconds: 8), text: 'SYNCHRONIZING RETRO LYRICS...'),
+            ],
+          ),
+        );
+      }
+      return autoTracks;
+    } catch (_) {
+      return [];
     }
   }
 
@@ -390,11 +831,11 @@ class InnerTubeService {
       }
     } catch (_) {}
 
-    return _defaultLibrary.where((t) => t.id != track.id).toList();
+    return _top10WeeklyTracks.where((t) => t.id != track.id).toList();
   }
 
   List<Track> _filterFallback(String query) {
-    return _defaultLibrary.where((track) {
+    return _top10WeeklyTracks.where((track) {
       return track.title.toLowerCase().contains(query.toLowerCase()) ||
           track.artist.toLowerCase().contains(query.toLowerCase()) ||
           track.genreTag.toLowerCase().contains(query.toLowerCase());
@@ -402,7 +843,7 @@ class InnerTubeService {
   }
 
   Future<ResolvedStream?> resolveAudioStream(Track track) async {
-    if (track.audioUrl != null && track.audioUrl!.isNotEmpty) {
+    if (track.audioUrl != null && track.audioUrl!.startsWith('http')) {
       return ResolvedStream(
         url: track.audioUrl!,
         totalBytes: 0,
@@ -410,11 +851,22 @@ class InnerTubeService {
       );
     }
 
+    if (track.audioUrl != null && track.audioUrl!.isNotEmpty) {
+      final decrypted = _decryptSaavnUrl(track.audioUrl!);
+      if (decrypted != null && decrypted.startsWith('http')) {
+        return ResolvedStream(
+          url: decrypted,
+          totalBytes: 0,
+          contentType: 'audio/mp4',
+        );
+      }
+    }
+
     try {
       final searchResults = await searchTracks('${track.title} ${track.artist}');
       if (searchResults.isNotEmpty) {
         final first = searchResults.first;
-        if (first.audioUrl != null && first.audioUrl!.isNotEmpty) {
+        if (first.audioUrl != null && first.audioUrl!.startsWith('http')) {
           return ResolvedStream(
             url: first.audioUrl!,
             totalBytes: 0,

@@ -63,25 +63,27 @@ class _RetroButtonState extends State<RetroButton> {
                   ),
                 ],
         ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            if (widget.icon != null) ...[
-              Icon(widget.icon, size: widget.fontSize + 2, color: fg),
-              const SizedBox(width: 4),
-            ],
-            Text(
-              widget.label,
-              style: TextStyle(
-                fontFamily: 'monospace',
-                fontSize: widget.fontSize,
-                fontWeight: FontWeight.bold,
-                color: fg,
-                letterSpacing: 0.5,
+        child: Center(
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (widget.icon != null) ...[
+                Icon(widget.icon, size: widget.fontSize + 2, color: fg),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                widget.label,
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: widget.fontSize,
+                  fontWeight: FontWeight.bold,
+                  color: fg,
+                  letterSpacing: 0.5,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

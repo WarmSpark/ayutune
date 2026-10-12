@@ -9,6 +9,7 @@ import '../widgets/cassette_deck.dart';
 import '../widgets/jiggly_lyrics.dart';
 import '../widgets/retro_button.dart';
 import '../widgets/retro_scrubber.dart';
+import '../widgets/retro_theme_dialog.dart';
 import '../widgets/wiggly_waveform.dart';
 
 class PlayerScreen extends StatefulWidget {
@@ -32,94 +33,117 @@ class _PlayerScreenState extends State<PlayerScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final availableHeight = constraints.maxHeight;
-        final isCompact = availableHeight < 600;
-        final deckHeight = isCompact ? 190.0 : 255.0;
+        final deckHeight = (availableHeight - 340.0).clamp(240.0, 460.0);
 
         return SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 6.0),
           child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight: availableHeight - 12.0,
-            ),
-            child: IntrinsicHeight(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      color: theme.panel,
-                      border: Border.all(color: theme.ink, width: 2.5),
-                    ),
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Row(
-                              children: [
-                                _tabButton('TAPE DECK', 0, theme),
-                                const SizedBox(width: 8),
-                                _tabButton('JIGGLY LYRICS', 1, theme),
-                              ],
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: theme.background,
-                                border: Border.all(color: theme.accentTeal, width: 1.5),
-                              ),
-                              child: Text(
-                                playerService.isAutoplay ? 'AUTOPLAY: ON' : 'AUTOPLAY: OFF',
-                                style: TextStyle(
-                                  fontFamily: 'monospace',
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.bold,
-                                  color: theme.accentTeal,
+            constraints: BoxConstraints(minHeight: availableHeight - 12.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    color: theme.panel,
+                    border: Border.all(color: theme.ink, width: 2.5),
+                  ),
+                  padding: const EdgeInsets.all(10),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              _tabButton('TAPE', 0, theme),
+                              const SizedBox(width: 6),
+                              _tabButton('LYRICS', 1, theme),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              GestureDetector(
+                                onTap: () => playerService.toggleAudioFx(),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                  margin: const EdgeInsets.only(right: 6),
+                                  decoration: BoxDecoration(
+                                    color: playerService.isAudioFx ? theme.accentCoral : theme.background,
+                                    border: Border.all(
+                                      color: playerService.isAudioFx ? theme.ink : theme.inkDim,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    playerService.isAudioFx ? 'FX: HD' : 'FX: OFF',
+                                    style: TextStyle(
+                                      fontFamily: 'monospace',
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: playerService.isAudioFx ? Colors.white : theme.inkDim,
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 10),
-                        if (_centerViewMode == 0)
-                          CassetteDeck(
-                            theme: theme,
-                            title: track.title,
-                            artist: track.artist,
-                            isPlaying: playerService.isPlaying,
-                            thumbnailUrl: track.thumbnailUrl,
-                          )
-                        else
-                          JigglyLyricsView(
-                            theme: theme,
-                            lyrics: track.lyrics,
-                            activeIndex: activeLyricIndex,
-                            height: deckHeight,
-                            onSeekLyric: (pos) => playerService.seek(pos),
+                              Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: theme.background,
+                                  border: Border.all(color: theme.accentTeal, width: 1.5),
+                                ),
+                                child: Text(
+                                  playerService.isAutoplay ? 'AUTO: ON' : 'AUTO: OFF',
+                                  style: TextStyle(
+                                    fontFamily: 'monospace',
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.bold,
+                                    color: theme.accentTeal,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        const SizedBox(height: 10),
-                        WigglyWaveform(
+                        ],
+                      ),
+                      const SizedBox(height: 10),
+                      if (_centerViewMode == 0)
+                        CassetteDeck(
                           theme: theme,
+                          title: track.title,
+                          artist: track.artist,
                           isPlaying: playerService.isPlaying,
-                        ),
-                        const SizedBox(height: 10),
-                        RetroScrubber(
+                          thumbnailUrl: track.thumbnailUrl,
+                          height: deckHeight,
+                        )
+                      else
+                        JigglyLyricsView(
                           theme: theme,
-                          currentPosition: playerService.currentPosition,
-                          totalDuration: playerService.totalDuration,
-                          onSeek: (pos) => playerService.seek(pos),
+                          lyrics: track.lyrics,
+                          activeIndex: activeLyricIndex,
+                          height: deckHeight,
+                          onSeekLyric: (pos) => playerService.seek(pos),
                         ),
-                      ],
-                    ),
+                      const SizedBox(height: 10),
+                      WigglyWaveform(
+                        theme: theme,
+                        isPlaying: playerService.isPlaying,
+                      ),
+                      const SizedBox(height: 10),
+                      RetroScrubber(
+                        theme: theme,
+                        currentPosition: playerService.currentPosition,
+                        totalDuration: playerService.totalDuration,
+                        onSeek: (pos) => playerService.seek(pos),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 6),
-                  _buildPaletteStrip(theme, themeProvider),
-                  const SizedBox(height: 6),
-                  _buildControlsBar(theme, playerService, track),
-                ],
-              ),
+                ),
+                const SizedBox(height: 6),
+                _buildPaletteStrip(theme, themeProvider),
+                const SizedBox(height: 6),
+                _buildControlsBar(theme, playerService, track),
+              ],
             ),
           ),
         );
@@ -132,7 +156,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
     return GestureDetector(
       onTap: () => setState(() => _centerViewMode = mode),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: isSelected ? theme.ink : theme.background,
           border: Border.all(color: theme.ink, width: 2),
@@ -141,7 +165,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           label,
           style: TextStyle(
             fontFamily: 'monospace',
-            fontSize: 11,
+            fontSize: 12,
             fontWeight: FontWeight.bold,
             color: isSelected ? theme.background : theme.ink,
           ),
@@ -164,31 +188,59 @@ class _PlayerScreenState extends State<PlayerScreen> {
             'THEME COLOR',
             style: TextStyle(
               fontFamily: 'monospace',
-              fontSize: 11,
+              fontSize: 12,
               fontWeight: FontWeight.bold,
               color: theme.ink,
             ),
           ),
           Row(
-            children: RetroThemeData.allThemes.map((item) {
-              final isCurrent = item.type == theme.type;
-              return GestureDetector(
-                onTap: () => themeProvider.setTheme(item),
-                child: Container(
-                  margin: const EdgeInsets.only(left: 8),
-                  width: 24,
-                  height: 24,
-                  decoration: BoxDecoration(
-                    color: item.background,
-                    border: Border.all(
-                      color: isCurrent ? item.accentTeal : item.ink,
-                      width: isCurrent ? 3.0 : 1.5,
+            children: [
+              ...RetroThemeData.allThemes.map((item) {
+                final isCurrent = item.type == theme.type;
+                return GestureDetector(
+                  onTap: () => themeProvider.setTheme(item),
+                  child: Container(
+                    margin: const EdgeInsets.only(left: 6),
+                    width: 22,
+                    height: 22,
+                    decoration: BoxDecoration(
+                      color: item.background,
+                      border: Border.all(
+                        color: isCurrent ? item.accentTeal : item.ink,
+                        width: isCurrent ? 2.5 : 1.2,
+                      ),
+                      shape: BoxShape.circle,
                     ),
-                    shape: BoxShape.circle,
+                  ),
+                );
+              }),
+              const SizedBox(width: 6),
+              GestureDetector(
+                onTap: () => showDialog(
+                  context: context,
+                  builder: (context) => RetroThemeDialog(
+                    theme: theme,
+                    themeProvider: themeProvider,
                   ),
                 ),
-              );
-            }).toList(),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: theme.accentCoral,
+                    border: Border.all(color: theme.ink, width: 1.2),
+                  ),
+                  child: const Text(
+                    '+',
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 11,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -209,50 +261,68 @@ class _PlayerScreenState extends State<PlayerScreen> {
       child: Column(
         children: [
           Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              RetroButton(
-                label: 'SHUFFLE',
-                theme: theme,
-                fontSize: 11,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                backgroundColor: playerService.isShuffle ? theme.accentTeal : theme.background,
-                textColor: playerService.isShuffle ? const Color(0xFF0C1626) : theme.ink,
-                onTap: () => playerService.toggleShuffle(),
+              Expanded(
+                flex: 3,
+                child: RetroButton(
+                  label: 'SHUF',
+                  theme: theme,
+                  fontSize: 11,
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  backgroundColor: playerService.isShuffle ? theme.accentTeal : theme.background,
+                  textColor: playerService.isShuffle ? const Color(0xFF0C1626) : theme.ink,
+                  onTap: () => playerService.toggleShuffle(),
+                ),
               ),
-              RetroButton(
-                label: 'PREV',
-                theme: theme,
-                backgroundColor: theme.ink,
-                textColor: theme.background,
-                fontSize: 12,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                onTap: () => playerService.previous(),
+              const SizedBox(width: 4),
+              Expanded(
+                flex: 3,
+                child: RetroButton(
+                  label: 'PREV',
+                  theme: theme,
+                  backgroundColor: theme.ink,
+                  textColor: theme.background,
+                  fontSize: 12,
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  onTap: () => playerService.previous(),
+                ),
               ),
-              RetroButton(
-                label: playerService.isPlaying ? 'PAUSE' : 'PLAY',
-                theme: theme,
-                backgroundColor: theme.accentCoral,
-                textColor: Colors.white,
-                fontSize: 14,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                onTap: () => playerService.togglePlayPause(),
+              const SizedBox(width: 4),
+              Expanded(
+                flex: 4,
+                child: RetroButton(
+                  label: playerService.isPlaying ? 'PAUSE' : 'PLAY',
+                  theme: theme,
+                  backgroundColor: theme.accentCoral,
+                  textColor: Colors.white,
+                  fontSize: 14,
+                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  onTap: () => playerService.togglePlayPause(),
+                ),
               ),
-              RetroButton(
-                label: 'NEXT',
-                theme: theme,
-                fontSize: 12,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                onTap: () => playerService.next(),
+              const SizedBox(width: 4),
+              Expanded(
+                flex: 3,
+                child: RetroButton(
+                  label: 'NEXT',
+                  theme: theme,
+                  fontSize: 12,
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  onTap: () => playerService.next(),
+                ),
               ),
-              RetroButton(
-                label: 'AUTO',
-                theme: theme,
-                fontSize: 11,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                backgroundColor: playerService.isAutoplay ? theme.accentTeal : theme.background,
-                textColor: playerService.isAutoplay ? const Color(0xFF0C1626) : theme.ink,
-                onTap: () => playerService.toggleAutoplay(),
+              const SizedBox(width: 4),
+              Expanded(
+                flex: 3,
+                child: RetroButton(
+                  label: 'AUTO',
+                  theme: theme,
+                  fontSize: 11,
+                  padding: const EdgeInsets.symmetric(vertical: 9),
+                  backgroundColor: playerService.isAutoplay ? theme.accentTeal : theme.background,
+                  textColor: playerService.isAutoplay ? const Color(0xFF0C1626) : theme.ink,
+                  onTap: () => playerService.toggleAutoplay(),
+                ),
               ),
             ],
           ),
@@ -265,8 +335,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   RetroButton(
                     label: 'SAVE TAPE',
                     theme: theme,
-                    fontSize: 10,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    fontSize: 11,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                     backgroundColor: theme.accentTeal,
                     textColor: const Color(0xFF0C1626),
                     onTap: () => _handleSaveTrack(track, theme),
@@ -275,8 +345,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
                   RetroButton(
                     label: '+ TAPE',
                     theme: theme,
-                    fontSize: 10,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    fontSize: 11,
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
                     onTap: () => _showAddToPlaylistDialog(track, theme),
                   ),
                 ],

@@ -3,6 +3,34 @@ import 'package:google_fonts/google_fonts.dart';
 import '../models/lyric_line.dart';
 import '../theme/retro_theme.dart';
 
+class RetroDotGridPainter extends CustomPainter {
+  final Color dotColor;
+  final double spacing;
+
+  RetroDotGridPainter({
+    required this.dotColor,
+    this.spacing = 10.0,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = dotColor
+      ..style = PaintingStyle.fill;
+
+    for (double y = spacing / 2; y < size.height; y += spacing) {
+      for (double x = spacing / 2; x < size.width; x += spacing) {
+        canvas.drawCircle(Offset(x, y), 0.9, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant RetroDotGridPainter oldDelegate) {
+    return oldDelegate.dotColor != dotColor;
+  }
+}
+
 class SquigglyMarkerPainter extends CustomPainter {
   final Color borderColor;
   final Color fillColor;
@@ -33,13 +61,14 @@ class SquigglyMarkerPainter extends CustomPainter {
       ..color = shadowColor
       ..style = PaintingStyle.fill;
 
-    final path = Path();
-    final double jitter = frame == 0 ? 1.4 : -1.4;
+    final double jx = frame == 0 ? 1.6 : -1.6;
+    final double jy = frame == 0 ? -1.4 : 1.4;
 
-    path.moveTo(2.0, 2.0);
-    path.lineTo(size.width - 2.0 + (frame == 0 ? 1.0 : -1.0), 2.0 + jitter);
-    path.lineTo(size.width - 2.0 + jitter, size.height - 2.0 - jitter);
-    path.lineTo(2.0 - jitter, size.height - 2.0 + (frame == 0 ? -1.0 : 1.0));
+    final path = Path();
+    path.moveTo(3.0 + jx, 3.0);
+    path.lineTo(size.width - 3.0, 3.0 + jy);
+    path.lineTo(size.width - 3.0 - jx, size.height - 3.0);
+    path.lineTo(3.0, size.height - 3.0 - jy);
     path.close();
 
     canvas.save();
@@ -70,7 +99,7 @@ class JigglyLyricsView extends StatefulWidget {
     required this.lyrics,
     required this.activeIndex,
     required this.onSeekLyric,
-    this.height = 240,
+    this.height = 280,
   });
 
   @override
@@ -110,10 +139,13 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
 
   void _scrollToActive() {
     if (!_scrollController.hasClients) return;
-    final targetOffset = widget.activeIndex * 64.0;
+    const itemEstimatedHeight = 64.0;
+    final targetOffset = (widget.activeIndex * itemEstimatedHeight) -
+        (widget.height / 2) +
+        (itemEstimatedHeight / 2);
     _scrollController.animateTo(
-      targetOffset,
-      duration: const Duration(milliseconds: 300),
+      targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
+      duration: const Duration(milliseconds: 320),
       curve: Curves.easeOutQuad,
     );
   }
@@ -138,8 +170,8 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
         child: Center(
           child: Text(
             'NO SYNCHRONIZED LYRICS FOUND',
-            style: GoogleFonts.gaegu(
-              fontSize: 18,
+            style: GoogleFonts.shantellSans(
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: widget.theme.inkDim,
             ),
@@ -155,112 +187,100 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
         color: widget.theme.background,
         border: Border.all(color: widget.theme.ink, width: 2),
       ),
-      child: ListView.builder(
-        controller: _scrollController,
-        padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
-        itemCount: widget.lyrics.length,
-        itemBuilder: (context, index) {
-          final line = widget.lyrics[index];
-          final isActive = index == widget.activeIndex;
-
-          if (isActive) {
-            return Center(
-              child: GestureDetector(
-                onTap: () => widget.onSeekLyric(line.timestamp),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: CustomPaint(
-                    painter: SquigglyMarkerPainter(
-                      borderColor: widget.theme.accentTeal,
-                      fillColor: widget.theme.accentCoral,
-                      shadowColor: widget.theme.ink,
-                      frame: _currentFrame,
-                    ),
-                    child: Container(
-                      constraints: const BoxConstraints(maxWidth: 320),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      child: _buildSteppedJigglyText(line.text, _currentFrame),
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }
-
-          return Center(
-            child: GestureDetector(
-              onTap: () => widget.onSeekLyric(line.timestamp),
-              child: Container(
-                constraints: const BoxConstraints(maxWidth: 320),
-                margin: const EdgeInsets.symmetric(vertical: 6),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                child: Text(
-                  line.text,
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.gaegu(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: widget.theme.inkDim.withValues(alpha: 0.55),
-                  ),
-                ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: RetroDotGridPainter(
+                dotColor: widget.theme.inkMuted.withValues(alpha: 0.35),
+                spacing: 12.0,
               ),
             ),
-          );
-        },
-      ),
-    );
-  }
+          ),
+          ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+            itemCount: widget.lyrics.length,
+            itemBuilder: (context, index) {
+              final line = widget.lyrics[index];
+              final isActive = index == widget.activeIndex;
 
-  Widget _buildSteppedJigglyText(String text, int frame) {
-    final words = text.split(' ');
-    int charCounter = 0;
+              if (isActive) {
+                return Center(
+                  child: GestureDetector(
+                    onTap: () => widget.onSeekLyric(line.timestamp),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: CustomPaint(
+                        painter: SquigglyMarkerPainter(
+                          borderColor: widget.theme.accentTeal,
+                          fillColor: widget.theme.accentCoral,
+                          shadowColor: widget.theme.ink,
+                          frame: _currentFrame,
+                        ),
+                        child: Container(
+                          constraints: const BoxConstraints(maxWidth: 340),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 10,
+                          ),
+                          child: Transform(
+                            transform: Matrix4.translationValues(
+                              _currentFrame == 0 ? 1.2 : -1.2,
+                              _currentFrame == 0 ? -0.8 : 0.8,
+                              0.0,
+                            )..rotateZ(_currentFrame == 0 ? 0.012 : -0.012),
+                            alignment: Alignment.center,
+                            child: Text(
+                              line.text,
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.shantellSans(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: const Color(0xFFFAF6EE),
+                                letterSpacing: 0.5,
+                                shadows: [
+                                  Shadow(
+                                    offset: const Offset(1.5, 1.5),
+                                    color: widget.theme.ink,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }
 
-    return Wrap(
-      alignment: WrapAlignment.center,
-      crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: 6.0,
-      runSpacing: 4.0,
-      children: words.map((word) {
-        final chars = word.split('');
-        final wordWidget = Row(
-          mainAxisSize: MainAxisSize.min,
-          children: List.generate(chars.length, (ci) {
-            final idx = charCounter + ci;
-            final ch = chars[ci];
-
-            final double dx = frame == 0
-                ? (((idx * 7) % 5) - 2.0) * 0.8
-                : (-(((idx * 7) % 5) - 2.0)) * 0.8;
-
-            final double dy = frame == 0
-                ? (((idx * 11) % 5) - 2.0) * 1.0
-                : (-(((idx * 11) % 5) - 2.0)) * 1.0;
-
-            final double rot = frame == 0
-                ? (((idx * 13) % 7) - 3.0) * 0.015
-                : (-(((idx * 13) % 7) - 3.0)) * 0.015;
-
-            return Transform(
-              transform: Matrix4.translationValues(dx, dy, 0.0)..rotateZ(rot),
-              alignment: Alignment.center,
-              child: Text(
-                ch,
-                style: GoogleFonts.gaegu(
-                  fontSize: 21,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                  letterSpacing: 0.8,
+              return Center(
+                child: GestureDetector(
+                  onTap: () => widget.onSeekLyric(line.timestamp),
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 340),
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    child: Text(
+                      line.text,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.shantellSans(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: widget.theme.inkDim.withValues(alpha: 0.45),
+                      ),
+                    ),
+                  ),
                 ),
-              ),
-            );
-          }),
-        );
-        charCounter += word.length + 1;
-        return wordWidget;
-      }).toList(),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

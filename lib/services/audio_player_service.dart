@@ -6,8 +6,11 @@ import '../models/track.dart';
 import 'innertube_service.dart';
 
 class AudioPlayerService extends ChangeNotifier {
-  final AudioPlayer _player = AudioPlayer();
+  late final AudioPlayer _player;
   final InnerTubeService _innerTube = InnerTubeService();
+  AndroidLoudnessEnhancer? _loudnessEnhancer;
+  AndroidEqualizer? _equalizer;
+  bool _isAudioFx = true;
 
   List<Track> _queue = [];
   int _currentIndex = 0;
@@ -20,8 +23,20 @@ class AudioPlayerService extends ChangeNotifier {
   StreamSubscription<Duration?>? _durationSubscription;
 
   AudioPlayerService() {
+    if (!kIsWeb && Platform.isAndroid) {
+      _loudnessEnhancer = AndroidLoudnessEnhancer();
+      _equalizer = AndroidEqualizer();
+      _player = AudioPlayer(
+        audioPipeline: AudioPipeline(
+          androidAudioEffects: [_loudnessEnhancer!, _equalizer!],
+        ),
+      );
+    } else {
+      _player = AudioPlayer();
+    }
     _initQueue();
     _listenToPlayerStreams();
+    _applyAudioFx();
   }
 
   List<Track> get queue => List.unmodifiable(_queue);
@@ -30,6 +45,7 @@ class AudioPlayerService extends ChangeNotifier {
   bool get isShuffle => _isShuffle;
   bool get isAutoplay => _isAutoplay;
   bool get isPlaying => _player.playing;
+  bool get isAudioFx => _isAudioFx;
 
   Track get currentTrack {
     if (_queue.isEmpty || _currentIndex >= _queue.length) {
@@ -73,6 +89,25 @@ class AudioPlayerService extends ChangeNotifier {
       }
       notifyListeners();
     });
+  }
+
+  Future<void> _applyAudioFx() async {
+    if (_loudnessEnhancer == null) return;
+    try {
+      await _loudnessEnhancer!.setEnabled(_isAudioFx);
+      if (_isAudioFx) {
+        await _loudnessEnhancer!.setTargetGain(2.5);
+      }
+      if (_equalizer != null) {
+        await _equalizer!.setEnabled(_isAudioFx);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> toggleAudioFx() async {
+    _isAudioFx = !_isAudioFx;
+    await _applyAudioFx();
+    notifyListeners();
   }
 
   Future<void> _handleTrackCompleted() async {
@@ -203,20 +238,15 @@ class AudioPlayerService extends ChangeNotifier {
 
   Future<void> next() async {
     if (_queue.isEmpty) return;
-    if (_isShuffle && _queue.length > 1) {
-      int nextIdx;
-      do {
-        nextIdx = DateTime.now().millisecond % _queue.length;
-      } while (nextIdx == _currentIndex);
-      _currentIndex = nextIdx;
+    if (_isShuffle) {
+      _currentIndex = DateTime.now().millisecond % _queue.length;
     } else {
       if (_currentIndex < _queue.length - 1) {
         _currentIndex++;
+      } else if (_isAutoplay) {
+        await _autoplaySimilar();
+        return;
       } else {
-        if (_isAutoplay) {
-          await _autoplaySimilar();
-          return;
-        }
         _currentIndex = 0;
       }
     }

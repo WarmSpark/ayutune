@@ -9,6 +9,7 @@ class CassetteDeck extends StatefulWidget {
   final String artist;
   final bool isPlaying;
   final String? thumbnailUrl;
+  final double height;
 
   const CassetteDeck({
     super.key,
@@ -17,6 +18,7 @@ class CassetteDeck extends StatefulWidget {
     required this.artist,
     required this.isPlaying,
     this.thumbnailUrl,
+    this.height = 220,
   });
 
   @override
@@ -61,7 +63,7 @@ class _CassetteDeckState extends State<CassetteDeck>
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      height: 175,
+      height: widget.height,
       decoration: BoxDecoration(
         color: widget.theme.background,
         border: Border.all(color: widget.theme.ink, width: 2.5),
@@ -75,11 +77,11 @@ class _CassetteDeckState extends State<CassetteDeck>
         ),
         padding: const EdgeInsets.all(8),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             Container(
               width: double.infinity,
-              height: 56,
+              height: 64,
               decoration: BoxDecoration(
                 color: widget.theme.card,
                 border: Border.all(color: widget.theme.ink, width: 1.5),
@@ -96,14 +98,14 @@ class _CassetteDeckState extends State<CassetteDeck>
                       ),
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   RetroThumbnail(
                     url: widget.thumbnailUrl,
-                    width: 44,
-                    height: 44,
+                    width: 48,
+                    height: 48,
                     theme: widget.theme,
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 10),
                   Expanded(
                     child: Padding(
                       padding: const EdgeInsets.only(right: 8),
@@ -117,19 +119,19 @@ class _CassetteDeckState extends State<CassetteDeck>
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontFamily: 'monospace',
-                              fontSize: 12,
+                              fontSize: 14,
                               fontWeight: FontWeight.bold,
                               color: widget.theme.ink,
                             ),
                           ),
-                          const SizedBox(height: 2),
+                          const SizedBox(height: 3),
                           Text(
                             widget.artist,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontFamily: 'monospace',
-                              fontSize: 9,
+                              fontSize: 11,
                               color: widget.theme.inkDim,
                             ),
                           ),
@@ -141,19 +143,19 @@ class _CassetteDeckState extends State<CassetteDeck>
               ),
             ),
             Container(
-              width: 180,
-              height: 44,
+              width: 200,
+              height: 52,
               decoration: BoxDecoration(
                 color: widget.theme.background,
                 border: Border.all(color: widget.theme.ink, width: 1.5),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _buildSpool(),
                   Container(
-                    width: 44,
+                    width: 50,
                     height: 6,
                     decoration: BoxDecoration(
                       color: widget.theme.inkMuted,
@@ -177,8 +179,8 @@ class _CassetteDeckState extends State<CassetteDeck>
         return Transform.rotate(
           angle: _rotationController.value * 2 * math.pi,
           child: Container(
-            width: 26,
-            height: 26,
+            width: 32,
+            height: 32,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: widget.theme.card,
@@ -186,8 +188,8 @@ class _CassetteDeckState extends State<CassetteDeck>
             ),
             child: Center(
               child: Container(
-                width: 8,
-                height: 8,
+                width: 10,
+                height: 10,
                 decoration: BoxDecoration(
                   border: Border.all(color: widget.theme.ink, width: 1.5),
                 ),

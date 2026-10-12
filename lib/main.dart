@@ -5,13 +5,13 @@ import 'screens/player_screen.dart';
 import 'services/audio_player_service.dart';
 import 'services/offline_service.dart';
 import 'services/playlist_service.dart';
+import 'theme/retro_theme.dart';
 import 'theme/theme_provider.dart';
+import 'widgets/retro_theme_dialog.dart';
 import 'widgets/retro_window.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await OfflineService().init();
-  await PlaylistService().init();
   runApp(
     MultiProvider(
       providers: [
@@ -44,11 +44,29 @@ class AyutuneHomeScreen extends StatefulWidget {
 }
 
 class _AyutuneHomeScreenState extends State<AyutuneHomeScreen> {
-  int _selectedTabIndex = 0;
+  int _selectedTabIndex = 1;
+
+  @override
+  void initState() {
+    super.initState();
+    OfflineService().init();
+    PlaylistService().init();
+  }
+
+  void _openThemeDialog(RetroThemeData theme, ThemeProvider themeProvider) {
+    showDialog(
+      context: context,
+      builder: (context) => RetroThemeDialog(
+        theme: theme,
+        themeProvider: themeProvider,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Provider.of<ThemeProvider>(context).currentTheme;
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final theme = themeProvider.currentTheme;
 
     return Scaffold(
       backgroundColor: theme.background,
@@ -64,7 +82,7 @@ class _AyutuneHomeScreenState extends State<AyutuneHomeScreen> {
                 theme: theme,
                 title: 'ayutune.apk',
                 onFilesTap: () => setState(() => _selectedTabIndex = 1),
-                onThemeTap: () => setState(() => _selectedTabIndex = 0),
+                onThemeTap: () => _openThemeDialog(theme, themeProvider),
               ),
               RetroNavTabs(
                 theme: theme,
