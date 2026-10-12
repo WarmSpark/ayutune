@@ -1,6 +1,77 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../models/lyric_line.dart';
 import '../theme/retro_theme.dart';
+
+class SquigglyBorderPainter extends CustomPainter {
+  final Color borderColor;
+  final Color fillColor;
+  final double phase;
+
+  SquigglyBorderPainter({
+    required this.borderColor,
+    required this.fillColor,
+    required this.phase,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final fillPaint = Paint()
+      ..color = fillColor
+      ..style = PaintingStyle.fill;
+
+    final borderPaint = Paint()
+      ..color = borderColor
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+
+    final path = Path();
+    const double step = 6.0;
+
+    path.moveTo(0, 0);
+
+    for (double x = 0; x <= size.width; x += step) {
+      final y = math.sin((x / 10.0) + phase) * 1.8;
+      path.lineTo(x, y);
+    }
+
+    for (double y = 0; y <= size.height; y += step) {
+      final x = size.width + math.sin((y / 10.0) + phase * 1.3) * 1.8;
+      path.lineTo(x, y);
+    }
+
+    for (double x = size.width; x >= 0; x -= step) {
+      final y = size.height + math.sin((x / 10.0) + phase * 1.7) * 1.8;
+      path.lineTo(x, y);
+    }
+
+    for (double y = size.height; y >= 0; y -= step) {
+      final x = math.sin((y / 10.0) + phase * 2.1) * 1.8;
+      path.lineTo(x, y);
+    }
+
+    path.close();
+
+    final shadowPaint = Paint()
+      ..color = Colors.black.withValues(alpha: 0.4)
+      ..style = PaintingStyle.fill;
+    canvas.save();
+    canvas.translate(2.5, 2.5);
+    canvas.drawPath(path, shadowPaint);
+    canvas.restore();
+
+    canvas.drawPath(path, fillPaint);
+    canvas.drawPath(path, borderPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant SquigglyBorderPainter oldDelegate) {
+    return oldDelegate.phase != phase;
+  }
+}
 
 class JigglyLyricsView extends StatefulWidget {
   final RetroThemeData theme;
@@ -30,7 +101,7 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
     super.initState();
     _jiggleController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 320),
+      duration: const Duration(milliseconds: 280),
     )..repeat();
   }
 
@@ -46,7 +117,7 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
 
   void _scrollToActive() {
     if (!_scrollController.hasClients) return;
-    final targetOffset = widget.activeIndex * 56.0;
+    final targetOffset = widget.activeIndex * 60.0;
     _scrollController.animateTo(
       targetOffset,
       duration: const Duration(milliseconds: 350),
@@ -66,7 +137,7 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
     if (widget.lyrics.isEmpty) {
       return Container(
         width: double.infinity,
-        height: 170,
+        height: 175,
         decoration: BoxDecoration(
           color: widget.theme.background,
           border: Border.all(color: widget.theme.ink, width: 2),
@@ -74,9 +145,9 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
         child: Center(
           child: Text(
             'NO LYRICS AVAILABLE',
-            style: TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 11,
+            style: GoogleFonts.gaegu(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
               color: widget.theme.inkDim,
             ),
           ),
@@ -86,7 +157,7 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
 
     return Container(
       width: double.infinity,
-      height: 170,
+      height: 175,
       decoration: BoxDecoration(
         color: widget.theme.background,
         border: Border.all(color: widget.theme.ink, width: 2),
@@ -103,46 +174,24 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
             return AnimatedBuilder(
               animation: _jiggleController,
               builder: (context, child) {
-                final frame = (_jiggleController.value * 4).floor();
-                final offsetX = (frame % 2 == 0) ? -2.0 : 2.0;
-                final offsetY = (frame == 1 || frame == 3) ? 1.5 : -1.5;
-                final rot = (frame % 2 == 0) ? 0.015 : -0.015;
+                final t = _jiggleController.value * 2 * math.pi;
 
-                return Transform.translate(
-                  offset: Offset(offsetX, offsetY),
-                  child: Transform.rotate(
-                    angle: rot,
-                    child: Center(
-                      child: GestureDetector(
-                        onTap: () => widget.onSeekLyric(line.timestamp),
+                return Center(
+                  child: GestureDetector(
+                    onTap: () => widget.onSeekLyric(line.timestamp),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: CustomPaint(
+                        painter: SquigglyBorderPainter(
+                          borderColor: widget.theme.accentTeal,
+                          fillColor: widget.theme.accentCoral,
+                          phase: t,
+                        ),
                         child: Container(
-                          margin: const EdgeInsets.symmetric(vertical: 6),
+                          constraints: const BoxConstraints(maxWidth: 310),
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: widget.theme.accentCoral,
-                            border: Border.all(
-                                color: widget.theme.accentTeal, width: 2),
-                            borderRadius: BorderRadius.circular(3),
-                            boxShadow: [
-                              BoxShadow(
-                                color: widget.theme.ink,
-                                offset: const Offset(2, 2),
-                                blurRadius: 0,
-                              ),
-                            ],
-                          ),
-                          child: Text(
-                            line.text,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontFamily: 'monospace',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
+                              horizontal: 14, vertical: 8),
+                          child: _buildJigglyText(line.text, t),
                         ),
                       ),
                     ),
@@ -156,15 +205,15 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
             child: GestureDetector(
               onTap: () => widget.onSeekLyric(line.timestamp),
               child: Container(
+                constraints: const BoxConstraints(maxWidth: 310),
                 margin: const EdgeInsets.symmetric(vertical: 6),
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                 child: Text(
                   line.text,
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 12,
+                  style: GoogleFonts.gaegu(
+                    fontSize: 15,
+                    fontWeight: FontWeight.bold,
                     color: widget.theme.inkDim.withValues(alpha: 0.5),
                   ),
                 ),
@@ -173,6 +222,47 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
           );
         },
       ),
+    );
+  }
+
+  Widget _buildJigglyText(String text, double phase) {
+    final words = text.split(' ');
+    int charIndex = 0;
+
+    return Wrap(
+      alignment: WrapAlignment.center,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      spacing: 6.0,
+      runSpacing: 4.0,
+      children: words.map((word) {
+        final wordChars = word.split('');
+        final wordWidget = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(wordChars.length, (ci) {
+            final idx = charIndex + ci;
+            final ch = wordChars[ci];
+            final dy = math.sin(phase * 1.6 + idx * 0.7) * 2.2;
+            final dx = math.cos(phase * 1.2 + idx * 0.9) * 1.0;
+            final rot = math.sin(phase * 1.4 + idx * 0.5) * 0.05;
+
+            return Transform(
+              transform: Matrix4.translationValues(dx, dy, 0.0)..rotateZ(rot),
+              alignment: Alignment.center,
+              child: Text(
+                ch,
+                style: GoogleFonts.gaegu(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                  letterSpacing: 0.8,
+                ),
+              ),
+            );
+          }),
+        );
+        charIndex += word.length + 1;
+        return wordWidget;
+      }).toList(),
     );
   }
 }

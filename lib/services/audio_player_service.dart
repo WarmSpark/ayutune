@@ -39,6 +39,18 @@ class AudioPlayerService extends ChangeNotifier {
   Duration get totalDuration => _player.duration ?? currentTrack.duration;
   double get volume => _player.volume;
 
+  int getActiveLyricIndex() {
+    final lyrics = currentTrack.lyrics;
+    if (lyrics.isEmpty) return 0;
+    final pos = currentPosition;
+    for (int i = lyrics.length - 1; i >= 0; i--) {
+      if (pos >= lyrics[i].timestamp) {
+        return i;
+      }
+    }
+    return 0;
+  }
+
   void _initQueue() {
     _queue = List.from(_innerTube.getDefaultTracks());
   }
@@ -83,22 +95,14 @@ class AudioPlayerService extends ChangeNotifier {
 
     try {
       final track = currentTrack;
-
       _fetchLyricsInBackground(track);
 
-      final resolvedUrl = await _innerTube.resolveAudioStreamUrl(track);
+      final streamData = await _innerTube.resolveAudioStream(track);
 
-      if (resolvedUrl != null && resolvedUrl.isNotEmpty) {
-        if (track.youtubeVideoId != null && track.youtubeVideoId!.isNotEmpty) {
-          await _player.setUrl(
-            resolvedUrl,
-            headers: {
-              'User-Agent': 'com.google.android.youtube/20.10.38 (Linux; U; Android 11) gzip',
-            },
-          );
-        } else {
-          await _player.setUrl(resolvedUrl);
-        }
+      if (streamData != null) {
+        await _player.setAudioSource(
+          AudioSource.uri(Uri.parse(streamData.url)),
+        );
         await _player.play();
       }
     } catch (_) {
@@ -111,7 +115,9 @@ class AudioPlayerService extends ChangeNotifier {
   void _fetchLyricsInBackground(Track track) async {
     try {
       final lyrics = await _innerTube.fetchLyrics(track.title, track.artist);
-      if (lyrics.isNotEmpty && _currentIndex < _queue.length && _queue[_currentIndex].id == track.id) {
+      if (lyrics.isNotEmpty &&
+          _currentIndex < _queue.length &&
+          _queue[_currentIndex].id == track.id) {
         _queue[_currentIndex] = track.copyWith(lyrics: lyrics);
         notifyListeners();
       }
@@ -133,6 +139,12 @@ class AudioPlayerService extends ChangeNotifier {
 
   Future<void> seek(Duration position) async {
     await _player.seek(position);
+  }
+
+  void obliterate() {
+    _player.stop();
+    _player.seek(Duration.zero);
+    notifyListeners();
   }
 
   Future<void> previous() async {
@@ -168,29 +180,49 @@ class AudioPlayerService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setVolume(double val) async {
-    final clamped = val.clamp(0.0, 1.0);
-    await _player.setVolume(clamped);
+  void setVolume(double value) {
+    _player.setVolume(value.clamp(0.0, 1.0));
     notifyListeners();
   }
 
-  Future<void> obliterate() async {
-    await _player.stop();
-    await _player.seek(Duration.zero);
+  Future<void> searchAndPlay(String query) async {
+    _isLoading = true;
     notifyListeners();
-  }
 
-  int getActiveLyricIndex() {
-    final lyrics = currentTrack.lyrics;
-    if (lyrics.isEmpty) return -1;
-    final currentPos = _player.position;
-
-    for (int i = lyrics.length - 1; i >= 0; i--) {
-      if (currentPos >= lyrics[i].timestamp) {
-        return i;
+    try {
+      final results = await _innerTube.searchTracks(query);
+      if (results.isNotEmpty) {
+        _queue = List.from(results);
+        _currentIndex = 0;
+        await _loadAndPlayCurrent();
       }
+    } catch (_) {
+    } finally {
+      _isLoading = false;
+      notifyListeners();
     }
-    return 0;
+  }
+
+  void addTrackToQueue(Track track) {
+    _queue.add(track);
+    notifyListeners();
+  }
+
+  void removeTrackFromQueue(int index) {
+    if (index >= 0 && index < _queue.length) {
+      _queue.removeAt(index);
+      if (_currentIndex >= _queue.length) {
+        _currentIndex = _queue.length - 1;
+      }
+      notifyListeners();
+    }
+  }
+
+  void clearQueue() {
+    _queue.clear();
+    _currentIndex = 0;
+    _player.stop();
+    notifyListeners();
   }
 
   @override
@@ -199,7 +231,6 @@ class AudioPlayerService extends ChangeNotifier {
     _playerStateSubscription?.cancel();
     _durationSubscription?.cancel();
     _player.dispose();
-    _innerTube.dispose();
     super.dispose();
   }
 }
