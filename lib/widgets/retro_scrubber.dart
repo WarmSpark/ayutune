@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/retro_theme.dart';
 
 class RetroScrubber extends StatelessWidget {
@@ -98,6 +99,139 @@ class RetroScrubber extends StatelessWidget {
   }
 }
 
+class RetroVolumeControl extends StatelessWidget {
+  final RetroThemeData theme;
+  final double volume;
+  final ValueChanged<double> onVolumeChanged;
+
+  const RetroVolumeControl({
+    super.key,
+    required this.theme,
+    required this.volume,
+    required this.onVolumeChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = (volume * 100).round();
+    final activeSegments = (volume * 5).round().clamp(0, 5);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.panel,
+        border: Border.all(color: theme.ink, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: theme.ink,
+            offset: const Offset(2, 2),
+            blurRadius: 0,
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              onVolumeChanged((volume - 0.2).clamp(0.0, 1.0));
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+              decoration: BoxDecoration(
+                color: theme.background,
+                border: Border.all(color: theme.ink, width: 1.5),
+              ),
+              child: Text(
+                '-',
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: theme.ink,
+                  height: 1,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 5),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: List.generate(5, (index) {
+              final isLit = index < activeSegments;
+              final segColor = index < 2
+                  ? theme.accentTeal
+                  : index < 4
+                      ? theme.accentYellow
+                      : theme.accentCoral;
+              return GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  onVolumeChanged(((index + 1) * 0.2).clamp(0.0, 1.0));
+                },
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 1.5),
+                  width: 8,
+                  height: 16,
+                  decoration: BoxDecoration(
+                    color: isLit ? segColor : theme.background,
+                    border: Border.all(
+                      color: isLit ? theme.ink : theme.inkDim.withValues(alpha: 0.5),
+                      width: 1.2,
+                    ),
+                  ),
+                ),
+              );
+            }),
+          ),
+          const SizedBox(width: 5),
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              onVolumeChanged((volume + 0.2).clamp(0.0, 1.0));
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+              decoration: BoxDecoration(
+                color: theme.background,
+                border: Border.all(color: theme.ink, width: 1.5),
+              ),
+              child: Text(
+                '+',
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 13,
+                  fontWeight: FontWeight.bold,
+                  color: theme.ink,
+                  height: 1,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+            decoration: BoxDecoration(
+              color: theme.ink,
+              borderRadius: BorderRadius.circular(2),
+            ),
+            child: Text(
+              '$pct%',
+              style: TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+                color: theme.background,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class VolumeStepper extends StatelessWidget {
   final RetroThemeData theme;
   final double volume;
@@ -112,87 +246,11 @@ class VolumeStepper extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int step = (volume * 5).round().clamp(1, 5);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.panel,
-        border: Border.all(color: theme.ink, width: 2),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            'VOL',
-            style: TextStyle(
-              fontFamily: 'monospace',
-              fontSize: 8,
-              fontWeight: FontWeight.bold,
-              color: theme.ink,
-            ),
-          ),
-          const SizedBox(height: 2),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              GestureDetector(
-                onTap: () => onVolumeChanged((volume - 0.2).clamp(0.0, 1.0)),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: theme.ink, width: 1),
-                  ),
-                  child: Text(
-                    '<',
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      color: theme.ink,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 4),
-              Container(
-                width: 18,
-                height: 14,
-                decoration: BoxDecoration(
-                  color: theme.background,
-                  border: Border.all(color: theme.ink, width: 1),
-                ),
-                child: Center(
-                  child: Container(
-                    width: 3.0 + (step * 2.2),
-                    height: 3.0 + (step * 2.2),
-                    color: theme.ink,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 4),
-              GestureDetector(
-                onTap: () => onVolumeChanged((volume + 0.2).clamp(0.0, 1.0)),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: theme.ink, width: 1),
-                  ),
-                  child: Text(
-                    '>',
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
-                      color: theme.ink,
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
+    return RetroVolumeControl(
+      theme: theme,
+      volume: volume,
+      onVolumeChanged: onVolumeChanged,
     );
   }
 }
+

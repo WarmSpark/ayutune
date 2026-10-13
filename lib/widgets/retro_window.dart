@@ -117,6 +117,7 @@ class RetroNavTabs extends StatelessWidget {
   Widget _tabButton(String label, int index) {
     final isSelected = selectedTab == index;
     return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: () => onTabSelected(index),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),

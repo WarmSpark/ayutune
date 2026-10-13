@@ -9,7 +9,6 @@ import '../services/offline_service.dart';
 import '../services/playlist_service.dart';
 import '../theme/retro_theme.dart';
 import '../theme/theme_provider.dart';
-import '../widgets/audio_listener_dialog.dart';
 import '../widgets/retro_button.dart';
 import '../widgets/retro_theme_dialog.dart';
 import '../widgets/retro_thumbnail.dart';
@@ -227,16 +226,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
               ),
               const SizedBox(width: 4),
               RetroButton(
-                label: 'LISTEN',
-                theme: theme,
-                fontSize: 11,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                backgroundColor: theme.accentYellow,
-                textColor: const Color(0xFF0C1626),
-                onTap: () => _openAudioListener(theme),
-              ),
-              const SizedBox(width: 4),
-              RetroButton(
                 label: '+ SPOTIFY',
                 theme: theme,
                 fontSize: 11,
@@ -261,12 +250,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
     );
   }
 
-  void _openAudioListener(RetroThemeData theme) {
-    showDialog(
-      context: context,
-      builder: (context) => AudioListenerDialog(theme: theme),
-    );
-  }
 
   Widget _buildPaletteStrip(RetroThemeData theme, ThemeProvider themeProvider) {
     return Container(

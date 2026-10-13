@@ -32,6 +32,28 @@ class RetroDotGridPainter extends CustomPainter {
   }
 }
 
+class RetroScanlinePainter extends CustomPainter {
+  final Color scanlineColor;
+
+  RetroScanlinePainter({required this.scanlineColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = scanlineColor
+      ..strokeWidth = 1.0;
+
+    for (double y = 0; y < size.height; y += 4.0) {
+      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant RetroScanlinePainter oldDelegate) {
+    return oldDelegate.scanlineColor != scanlineColor;
+  }
+}
+
 class RetroSparklePainter extends CustomPainter {
   final Color color;
   final double size;
@@ -133,8 +155,7 @@ class SquigglyMarkerPainter extends CustomPainter {
 
     final borderPaint = Paint()
       ..color = borderColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0 + (pulse * 0.8)
+      ..strokeWidth = 2.0 + (pulse * 0.6)
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
@@ -143,10 +164,10 @@ class SquigglyMarkerPainter extends CustomPainter {
       ..style = PaintingStyle.fill;
 
     const frameOffsets = [
-      [1.8, -1.4, -1.2, 1.5],
-      [-1.5, 1.7, 1.4, -1.2],
-      [1.2, 1.3, -1.5, -1.4],
-      [-1.6, -1.1, 1.2, 1.6],
+      [1.5, -1.2, -1.0, 1.2],
+      [-1.2, 1.4, 1.1, -1.0],
+      [1.0, 1.1, -1.2, -1.1],
+      [-1.3, -1.0, 1.0, 1.3],
     ];
     final offsets = frameOffsets[frame % 4];
 
@@ -158,7 +179,7 @@ class SquigglyMarkerPainter extends CustomPainter {
     path.close();
 
     canvas.save();
-    canvas.translate(2.8 + (pulse * 1.2), 2.8 + (pulse * 1.2));
+    canvas.translate(2.5, 2.5);
     canvas.drawPath(path, shadowPaint);
     canvas.restore();
 
@@ -178,6 +199,8 @@ class JigglyLyricsView extends StatefulWidget {
   final int activeIndex;
   final ValueChanged<Duration> onSeekLyric;
   final double height;
+  final int animMode;
+  final VoidCallback? onCycleAnimMode;
 
   const JigglyLyricsView({
     super.key,
@@ -186,6 +209,8 @@ class JigglyLyricsView extends StatefulWidget {
     required this.activeIndex,
     required this.onSeekLyric,
     this.height = 280,
+    this.animMode = 0,
+    this.onCycleAnimMode,
   });
 
   @override
@@ -196,15 +221,17 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
     with TickerProviderStateMixin {
   late AnimationController _steppedController;
   late AnimationController _pulseController;
+  late AnimationController _cursorController;
   final ScrollController _scrollController = ScrollController();
   int _currentFrame = 0;
 
   @override
   void initState() {
     super.initState();
+
     _steppedController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 160),
+      duration: const Duration(milliseconds: 170),
     )..addStatusListener((status) {
         if (status == AnimationStatus.completed) {
           if (mounted) {
@@ -219,7 +246,12 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
 
     _pulseController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1300),
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
+
+    _cursorController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 500),
     )..repeat(reverse: true);
   }
 
@@ -233,14 +265,13 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
 
   void _scrollToActive() {
     if (!_scrollController.hasClients) return;
-    const itemEstimatedHeight = 62.0;
+    const itemEstimatedHeight = 58.0;
     final targetOffset = (widget.activeIndex * itemEstimatedHeight) -
         (widget.height / 2) +
-        (itemEstimatedHeight / 2) +
-        16.0;
+        (itemEstimatedHeight / 2);
     _scrollController.animateTo(
       targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-      duration: const Duration(milliseconds: 360),
+      duration: const Duration(milliseconds: 320),
       curve: Curves.easeOutCubic,
     );
   }
@@ -249,6 +280,7 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
   void dispose() {
     _steppedController.dispose();
     _pulseController.dispose();
+    _cursorController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
@@ -266,8 +298,8 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
         child: Center(
           child: Text(
             'NO SYNCHRONIZED LYRICS FOUND',
-            style: GoogleFonts.shantellSans(
-              fontSize: 16,
+            style: GoogleFonts.spaceMono(
+              fontSize: 13,
               fontWeight: FontWeight.bold,
               color: widget.theme.inkDim,
             ),
@@ -275,6 +307,8 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
         ),
       );
     }
+
+    final modeIndex = widget.animMode % 3;
 
     return Container(
       width: double.infinity,
@@ -287,23 +321,28 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
       child: Stack(
         children: [
           Positioned.fill(
-            child: CustomPaint(
-              painter: RetroDotGridPainter(
-                dotColor: widget.theme.inkMuted.withValues(alpha: 0.35),
-                spacing: 12.0,
-              ),
-            ),
+            child: modeIndex == 2
+                ? CustomPaint(
+                    painter: RetroScanlinePainter(
+                      scanlineColor: widget.theme.ink.withValues(alpha: 0.12),
+                    ),
+                  )
+                : CustomPaint(
+                    painter: RetroDotGridPainter(
+                      dotColor: widget.theme.inkMuted.withValues(alpha: 0.35),
+                      spacing: 12.0,
+                    ),
+                  ),
           ),
           AnimatedBuilder(
-            animation: _pulseController,
+            animation: Listenable.merge([_pulseController, _cursorController]),
             builder: (context, _) {
               final pulseVal = _pulseController.value;
-              final sparkleSize = 10.0 + (pulseVal * 5.0);
-              final sparkleRotation = pulseVal * math.pi;
+              final cursorVisible = _cursorController.value > 0.4;
 
               return ListView.builder(
                 controller: _scrollController,
-                padding: const EdgeInsets.symmetric(vertical: 54, horizontal: 12),
+                padding: const EdgeInsets.symmetric(vertical: 42, horizontal: 10),
                 itemCount: widget.lyrics.length,
                 itemBuilder: (context, index) {
                   final line = widget.lyrics[index];
@@ -312,142 +351,322 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
                   final isNeighbor = distance == 1;
 
                   if (isActive) {
-                    const transOffsets = [
-                      [1.2, -0.9, 0.012],
-                      [-1.0, 1.1, -0.010],
-                      [0.8, 0.7, 0.008],
-                      [-1.2, -0.8, -0.014],
-                    ];
-                    final cur = transOffsets[_currentFrame % 4];
-
-                    return Center(
-                      child: GestureDetector(
-                        onTap: () => widget.onSeekLyric(line.timestamp),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 6),
-                          child: AnimatedScale(
-                            scale: 1.04,
-                            duration: const Duration(milliseconds: 280),
-                            curve: Curves.easeOutBack,
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Transform.rotate(
-                                  angle: sparkleRotation,
-                                  child: CustomPaint(
-                                    painter: RetroSparklePainter(
-                                      color: widget.theme.accentTeal,
-                                      size: sparkleSize,
-                                    ),
-                                    size: const Size(18, 18),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                CustomPaint(
-                                  painter: SquigglyMarkerPainter(
-                                    borderColor: widget.theme.accentTeal,
-                                    fillColor: widget.theme.accentCoral,
-                                    shadowColor: widget.theme.ink,
-                                    frame: _currentFrame,
-                                    pulse: pulseVal,
-                                  ),
-                                  child: Container(
-                                    constraints: const BoxConstraints(maxWidth: 300),
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 8,
-                                    ),
-                                    child: Transform(
-                                      transform: Matrix4.translationValues(
-                                        cur[0],
-                                        cur[1],
-                                        0.0,
-                                      )..rotateZ(cur[2]),
-                                      alignment: Alignment.center,
-                                      child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Text(
-                                            line.text,
-                                            textAlign: TextAlign.center,
-                                            style: GoogleFonts.shantellSans(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.w800,
-                                              color: const Color(0xFFFAF6EE),
-                                              letterSpacing: 0.4,
-                                              shadows: [
-                                                Shadow(
-                                                  offset: const Offset(1.8, 1.8),
-                                                  color: widget.theme.ink,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          const SizedBox(height: 5),
-                                          MiniEqualizerBars(
-                                            color: const Color(0xFF00F0FF),
-                                            step: _currentFrame,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Transform.rotate(
-                                  angle: -sparkleRotation,
-                                  child: CustomPaint(
-                                    painter: RetroSparklePainter(
-                                      color: widget.theme.accentTeal,
-                                      size: sparkleSize,
-                                    ),
-                                    size: const Size(18, 18),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                    return _buildActiveLyric(
+                      line: line,
+                      modeIndex: modeIndex,
+                      pulseVal: pulseVal,
+                      cursorVisible: cursorVisible,
                     );
                   }
 
-                  return Center(
-                    child: GestureDetector(
-                      onTap: () => widget.onSeekLyric(line.timestamp),
-                      child: AnimatedScale(
-                        scale: isNeighbor ? 0.94 : 0.86,
-                        duration: const Duration(milliseconds: 240),
-                        child: AnimatedOpacity(
-                          opacity: isNeighbor ? 0.65 : 0.32,
-                          duration: const Duration(milliseconds: 240),
-                          child: Container(
-                            constraints: const BoxConstraints(maxWidth: 320),
-                            margin: const EdgeInsets.symmetric(vertical: 5),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 3,
-                            ),
-                            child: Text(
-                              line.text,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.shantellSans(
-                                fontSize: isNeighbor ? 15 : 13.5,
-                                fontWeight: FontWeight.w600,
-                                color: widget.theme.inkDim,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+                  return _buildInactiveLyric(
+                    line: line,
+                    isNeighbor: isNeighbor,
+                    modeIndex: modeIndex,
                   );
                 },
               );
             },
           ),
         ],
+      ),
+    );
+  }
+
+
+  Widget _buildActiveLyric({
+    required LyricLine line,
+    required int modeIndex,
+    required double pulseVal,
+    required bool cursorVisible,
+  }) {
+    if (modeIndex == 1) {
+      return Center(
+        child: GestureDetector(
+          onTap: () => widget.onSeekLyric(line.timestamp),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: AnimatedScale(
+              scale: 1.02 + (pulseVal * 0.02),
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOut,
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 290),
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                decoration: BoxDecoration(
+                  color: widget.theme.panel,
+                  borderRadius: BorderRadius.circular(6),
+                  border: Border.all(
+                    color: const Color(0xFF00F0FF),
+                    width: 2.0,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF00F0FF).withValues(alpha: 0.55 + (pulseVal * 0.35)),
+                      blurRadius: 8 + (pulseVal * 6),
+                      spreadRadius: 1,
+                    ),
+                    BoxShadow(
+                      color: const Color(0xFFFF007F).withValues(alpha: 0.35),
+                      blurRadius: 14,
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      line.text,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.rubik(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: const Color(0xFF00F0FF),
+                            blurRadius: 6 + (pulseVal * 4),
+                          ),
+                          const Shadow(
+                            color: Color(0xFFFF007F),
+                            blurRadius: 12,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 5),
+                    Container(
+                      height: 3,
+                      width: 50 + (pulseVal * 30),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00F0FF),
+                        borderRadius: BorderRadius.circular(2),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0xFF00F0FF),
+                            blurRadius: 4,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    if (modeIndex == 2) {
+      return Center(
+        child: GestureDetector(
+          onTap: () => widget.onSeekLyric(line.timestamp),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 290),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+              decoration: BoxDecoration(
+                color: const Color(0xFF07110C),
+                border: Border.all(
+                  color: const Color(0xFF39FF14),
+                  width: 2.0,
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0xFF39FF14),
+                    offset: Offset(2, 2),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '>> ${line.text} ${cursorVisible ? "█" : " "}',
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.spaceMono(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF39FF14),
+                      letterSpacing: 0.5,
+                      shadows: const [
+                        Shadow(
+                          color: Color(0xFF39FF14),
+                          blurRadius: 4,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '-- REC SYNC --',
+                    style: GoogleFonts.spaceMono(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF39FF14).withValues(alpha: 0.7),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    const transOffsets = [
+      [1.0, -0.8, 0.008],
+      [-0.8, 1.0, -0.007],
+      [0.7, 0.6, 0.006],
+      [-0.9, -0.7, -0.008],
+    ];
+    final cur = transOffsets[_currentFrame % 4];
+    final sparkleSize = 10.0 + (pulseVal * 4.0);
+    final sparkleRotation = pulseVal * math.pi;
+
+    return Center(
+      child: GestureDetector(
+        onTap: () => widget.onSeekLyric(line.timestamp),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          child: AnimatedScale(
+            scale: 1.03,
+            duration: const Duration(milliseconds: 240),
+            curve: Curves.easeOutBack,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Transform.rotate(
+                  angle: sparkleRotation,
+                  child: CustomPaint(
+                    painter: RetroSparklePainter(
+                      color: widget.theme.accentTeal,
+                      size: sparkleSize,
+                    ),
+                    size: const Size(16, 16),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                CustomPaint(
+                  painter: SquigglyMarkerPainter(
+                    borderColor: widget.theme.accentTeal,
+                    fillColor: widget.theme.accentCoral,
+                    shadowColor: widget.theme.ink,
+                    frame: _currentFrame,
+                    pulse: pulseVal,
+                  ),
+                  child: Container(
+                    constraints: const BoxConstraints(maxWidth: 250),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    child: Transform(
+                      transform: Matrix4.translationValues(cur[0], cur[1], 0.0)
+                        ..rotateZ(cur[2]),
+                      alignment: Alignment.center,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            line.text,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.shantellSans(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              color: const Color(0xFFFAF6EE),
+                              letterSpacing: 0.3,
+                              shadows: [
+                                Shadow(
+                                  offset: const Offset(1.5, 1.5),
+                                  color: widget.theme.ink,
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          MiniEqualizerBars(
+                            color: const Color(0xFF00F0FF),
+                            step: _currentFrame,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                Transform.rotate(
+                  angle: -sparkleRotation,
+                  child: CustomPaint(
+                    painter: RetroSparklePainter(
+                      color: widget.theme.accentTeal,
+                      size: sparkleSize,
+                    ),
+                    size: const Size(16, 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInactiveLyric({
+    required LyricLine line,
+    required bool isNeighbor,
+    required int modeIndex,
+  }) {
+    if (modeIndex == 2) {
+      return Center(
+        child: GestureDetector(
+          onTap: () => widget.onSeekLyric(line.timestamp),
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 280),
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+            child: Text(
+              '|  ${line.text}',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.spaceMono(
+                fontSize: isNeighbor ? 12.5 : 11.5,
+                fontWeight: FontWeight.w500,
+                color: const Color(0xFF39FF14).withValues(alpha: isNeighbor ? 0.65 : 0.35),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    final fontFamily = modeIndex == 1 ? GoogleFonts.rubik : GoogleFonts.shantellSans;
+
+    return Center(
+      child: GestureDetector(
+        onTap: () => widget.onSeekLyric(line.timestamp),
+        child: AnimatedScale(
+          scale: isNeighbor ? 0.94 : 0.86,
+          duration: const Duration(milliseconds: 200),
+          child: AnimatedOpacity(
+            opacity: isNeighbor ? 0.65 : 0.32,
+            duration: const Duration(milliseconds: 200),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 280),
+              margin: const EdgeInsets.symmetric(vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              child: Text(
+                line.text,
+                textAlign: TextAlign.center,
+                style: fontFamily(
+                  fontSize: isNeighbor ? 14.5 : 13.0,
+                  fontWeight: FontWeight.w600,
+                  color: widget.theme.inkDim,
+                ),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

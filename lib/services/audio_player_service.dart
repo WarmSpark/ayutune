@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/track.dart';
 import 'innertube_service.dart';
@@ -18,13 +17,7 @@ class AudioPlayerService extends ChangeNotifier {
   bool _isLoading = false;
   bool _isShuffle = false;
   bool _isAutoplay = true;
-  bool _isCrossfade = true;
-  bool _isFadingOut = false;
   double _userTargetVolume = 1.0;
-  Timer? _fadeTimer;
-
-  bool _isBeatHaptic = false;
-  Timer? _beatHapticTimer;
 
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<PlayerState>? _playerStateSubscription;
@@ -54,8 +47,6 @@ class AudioPlayerService extends ChangeNotifier {
   bool get isAutoplay => _isAutoplay;
   bool get isPlaying => _player.playing;
   bool get isAudioFx => _isAudioFx;
-  bool get isCrossfade => _isCrossfade;
-  bool get isBeatHaptic => _isBeatHaptic;
 
   Track get currentTrack {
     if (_queue.isEmpty || _currentIndex >= _queue.length) {
@@ -93,8 +84,7 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   void _listenToPlayerStreams() {
-    _positionSubscription = _player.positionStream.listen((pos) {
-      _checkCrossfade(pos);
+    _positionSubscription = _player.positionStream.listen((_) {
       notifyListeners();
     });
 
@@ -103,122 +93,11 @@ class AudioPlayerService extends ChangeNotifier {
     });
 
     _playerStateSubscription = _player.playerStateStream.listen((state) {
-      if (state.playing && _isBeatHaptic) {
-        _startBeatHaptics();
-      } else if (!state.playing) {
-        _stopBeatHaptics();
-      }
-
       if (state.processingState == ProcessingState.completed) {
         _handleTrackCompleted();
       }
       notifyListeners();
     });
-  }
-
-  void _checkCrossfade(Duration pos) {
-    if (!_isCrossfade || _isFadingOut) return;
-    final dur = _player.duration ?? (currentTrack.duration > Duration.zero ? currentTrack.duration : null);
-    if (dur == null || dur.inSeconds <= 8) return;
-    final remaining = (dur - pos).inMilliseconds;
-    if (remaining <= 3500 && remaining >= 400) {
-      _isFadingOut = true;
-      _autoCrossfadeToEnd();
-    }
-  }
-
-  Future<void> _autoCrossfadeToEnd() async {
-    await _fadeOut(durationMs: 2600);
-    if (_isFadingOut && _player.playing) {
-      _handleTrackCompleted();
-    }
-  }
-
-  Future<void> _fadeOut({int durationMs = 350}) async {
-    _fadeTimer?.cancel();
-    if (!_player.playing) return;
-    final startVol = _player.volume;
-    if (startVol <= 0.01) return;
-
-    final completer = Completer<void>();
-    const stepIntervalMs = 25;
-    final totalSteps = (durationMs / stepIntervalMs).round().clamp(6, 40);
-    int step = 0;
-
-    _fadeTimer = Timer.periodic(const Duration(milliseconds: stepIntervalMs), (timer) {
-      step++;
-      if (!_player.playing || step >= totalSteps) {
-        timer.cancel();
-        _fadeTimer = null;
-        _player.setVolume(0.0);
-        if (!completer.isCompleted) completer.complete();
-      } else {
-        final fraction = 1.0 - (step / totalSteps);
-        final v = (startVol * fraction).clamp(0.0, 1.0);
-        _player.setVolume(v);
-      }
-    });
-
-    return completer.future;
-  }
-
-  Future<void> _fadeIn({int durationMs = 700}) async {
-    _fadeTimer?.cancel();
-    await _player.setVolume(0.0);
-    final targetVol = _userTargetVolume.clamp(0.05, 1.0);
-
-    final completer = Completer<void>();
-    const stepIntervalMs = 25;
-    final totalSteps = (durationMs / stepIntervalMs).round().clamp(8, 50);
-    int step = 0;
-
-    _fadeTimer = Timer.periodic(const Duration(milliseconds: stepIntervalMs), (timer) {
-      step++;
-      if (!_player.playing || step >= totalSteps) {
-        timer.cancel();
-        _fadeTimer = null;
-        if (_player.playing) {
-          _player.setVolume(targetVol);
-        }
-        if (!completer.isCompleted) completer.complete();
-      } else {
-        final fraction = step / totalSteps;
-        final v = (targetVol * fraction).clamp(0.0, 1.0);
-        _player.setVolume(v);
-      }
-    });
-
-    return completer.future;
-  }
-
-  void _startBeatHaptics() {
-    _stopBeatHaptics();
-    if (!_isBeatHaptic) return;
-    _beatHapticTimer = Timer.periodic(const Duration(milliseconds: 480), (_) {
-      if (_player.playing) {
-        HapticFeedback.lightImpact();
-      }
-    });
-  }
-
-  void _stopBeatHaptics() {
-    _beatHapticTimer?.cancel();
-    _beatHapticTimer = null;
-  }
-
-  void toggleBeatHaptic() {
-    _isBeatHaptic = !_isBeatHaptic;
-    if (_isBeatHaptic && _player.playing) {
-      _startBeatHaptics();
-    } else {
-      _stopBeatHaptics();
-    }
-    notifyListeners();
-  }
-
-  void toggleCrossfade() {
-    _isCrossfade = !_isCrossfade;
-    notifyListeners();
   }
 
   Future<void> _applyAudioFx() async {
@@ -267,9 +146,6 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   Future<void> playTrack(Track track) async {
-    if (_isCrossfade && _player.playing) {
-      await _fadeOut(durationMs: 280);
-    }
     final existingIndex = _queue.indexWhere((t) => t.id == track.id);
     if (existingIndex != -1) {
       _currentIndex = existingIndex;
@@ -282,18 +158,12 @@ class AudioPlayerService extends ChangeNotifier {
 
   Future<void> playIndex(int index) async {
     if (index < 0 || index >= _queue.length) return;
-    if (_isCrossfade && _player.playing) {
-      await _fadeOut(durationMs: 280);
-    }
     _currentIndex = index;
     await _loadAndPlayCurrent();
   }
 
   Future<void> playQueue(List<Track> newTracks, {int startIndex = 0}) async {
     if (newTracks.isEmpty) return;
-    if (_isCrossfade && _player.playing) {
-      await _fadeOut(durationMs: 280);
-    }
     _queue = List.from(newTracks);
     _currentIndex = startIndex.clamp(0, _queue.length - 1);
     await _loadAndPlayCurrent();
@@ -301,25 +171,17 @@ class AudioPlayerService extends ChangeNotifier {
 
   Future<void> _loadAndPlayCurrent() async {
     _isLoading = true;
-    _isFadingOut = false;
     notifyListeners();
 
     try {
       final track = currentTrack;
       _fetchLyricsInBackground(track);
 
-      if (_isCrossfade) {
-        await _player.setVolume(0.0);
-      } else {
-        await _player.setVolume(_userTargetVolume);
-      }
+      await _player.setVolume(_userTargetVolume);
 
       if (track.isOffline && track.audioUrl != null && File(track.audioUrl!).existsSync()) {
         await _player.setAudioSource(AudioSource.file(track.audioUrl!));
         await _player.play();
-        if (_isCrossfade) {
-          _fadeIn(durationMs: 700);
-        }
       } else {
         final streamData = await _innerTube.resolveAudioStream(track);
         if (streamData != null) {
@@ -330,13 +192,7 @@ class AudioPlayerService extends ChangeNotifier {
             AudioSource.uri(Uri.parse(streamData.url)),
           );
           await _player.play();
-          if (_isCrossfade) {
-            _fadeIn(durationMs: 700);
-          }
         }
-      }
-      if (_isBeatHaptic) {
-        _startBeatHaptics();
       }
     } catch (_) {
     } finally {
@@ -360,39 +216,24 @@ class AudioPlayerService extends ChangeNotifier {
 
   Future<void> togglePlayPause() async {
     if (_player.playing) {
-      _stopBeatHaptics();
-      if (_isCrossfade) {
-        await _fadeOut(durationMs: 220);
-      }
       await _player.pause();
-      await _player.setVolume(_userTargetVolume);
     } else {
       if (_player.processingState == ProcessingState.idle) {
         await _loadAndPlayCurrent();
       } else {
-        if (_isCrossfade) {
-          await _player.setVolume(0.0);
-          await _player.play();
-          _fadeIn(durationMs: 350);
-        } else {
-          await _player.setVolume(_userTargetVolume);
-          await _player.play();
-        }
-        if (_isBeatHaptic) {
-          _startBeatHaptics();
-        }
+        await _player.setVolume(_userTargetVolume);
+        await _player.play();
       }
     }
     notifyListeners();
   }
 
-  Future<void> seek(Duration position) async {
+  Future<Duration?> seek(Duration position) async {
     await _player.seek(position);
+    return null;
   }
 
   void obliterate() {
-    _fadeTimer?.cancel();
-    _stopBeatHaptics();
     _player.stop();
     _player.seek(Duration.zero);
     notifyListeners();
@@ -400,9 +241,6 @@ class AudioPlayerService extends ChangeNotifier {
 
   Future<void> previous() async {
     if (_queue.isEmpty) return;
-    if (_isCrossfade && _player.playing) {
-      await _fadeOut(durationMs: 280);
-    }
     if (_currentIndex > 0) {
       _currentIndex--;
     } else {
@@ -413,9 +251,6 @@ class AudioPlayerService extends ChangeNotifier {
 
   Future<void> next() async {
     if (_queue.isEmpty) return;
-    if (_isCrossfade && _player.playing) {
-      await _fadeOut(durationMs: 280);
-    }
     if (_isShuffle) {
       _currentIndex = DateTime.now().millisecond % _queue.length;
     } else {
@@ -443,7 +278,6 @@ class AudioPlayerService extends ChangeNotifier {
 
   void setVolume(double value) {
     _userTargetVolume = value.clamp(0.0, 1.0);
-    _fadeTimer?.cancel();
     _player.setVolume(_userTargetVolume);
     notifyListeners();
   }
@@ -455,9 +289,6 @@ class AudioPlayerService extends ChangeNotifier {
     try {
       final results = await _innerTube.searchTracks(query);
       if (results.isNotEmpty) {
-        if (_isCrossfade && _player.playing) {
-          await _fadeOut(durationMs: 280);
-        }
         _queue = List.from(results);
         _currentIndex = 0;
         await _loadAndPlayCurrent();
@@ -485,8 +316,6 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   void clearQueue() {
-    _fadeTimer?.cancel();
-    _stopBeatHaptics();
     _queue.clear();
     _currentIndex = 0;
     _player.stop();
@@ -495,8 +324,6 @@ class AudioPlayerService extends ChangeNotifier {
 
   @override
   void dispose() {
-    _fadeTimer?.cancel();
-    _stopBeatHaptics();
     _positionSubscription?.cancel();
     _playerStateSubscription?.cancel();
     _durationSubscription?.cancel();
