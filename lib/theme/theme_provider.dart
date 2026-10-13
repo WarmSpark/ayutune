@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'retro_theme.dart';
 
 class ThemeProvider extends ChangeNotifier {
-  RetroThemeData _currentTheme = RetroThemeData.deepNavy;
+  RetroThemeData _currentTheme = RetroThemeData.paperBlue;
   Color? _customPrimary;
   Color? _customSecondary;
   Color? _customAccent;
@@ -38,13 +38,15 @@ class ThemeProvider extends ChangeNotifier {
           secondary: _customSecondary!,
           accent: _customAccent!,
         );
-      } else if (savedTypeName != null) {
+      } else if (savedTypeName != null && savedTypeName != 'deepNavy') {
         for (final t in RetroThemeData.allThemes) {
           if (t.type.name == savedTypeName) {
             _currentTheme = t;
             break;
           }
         }
+      } else {
+        _currentTheme = RetroThemeData.paperBlue;
       }
       notifyListeners();
     } catch (_) {}
@@ -103,7 +105,7 @@ class ThemeProvider extends ChangeNotifier {
     }
     final selected = RetroThemeData.allThemes.firstWhere(
       (theme) => theme.type == type,
-      orElse: () => RetroThemeData.deepNavy,
+      orElse: () => RetroThemeData.paperBlue,
     );
     setTheme(selected);
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 enum RetroPaletteType {
+  paperBlue,
   deepNavy,
   parchment,
   gameBoy,
@@ -68,6 +69,20 @@ class RetroThemeData {
       accentYellow: const Color(0xFFFFD166),
     );
   }
+
+  static const RetroThemeData paperBlue = RetroThemeData(
+    name: 'Paper Blue',
+    type: RetroPaletteType.paperBlue,
+    background: Color(0xFFFFFFFF),
+    panel: Color(0xFFF2F2F2),
+    card: Color(0xFFFAFAFA),
+    ink: Color(0xFF0A0A0A),
+    inkDim: Color(0xFF4A4A4A),
+    inkMuted: Color(0xFF888888),
+    accentCoral: Color(0xFF3A86FF),
+    accentTeal: Color(0xFF00B4D8),
+    accentYellow: Color(0xFFFFD166),
+  );
 
   static const RetroThemeData deepNavy = RetroThemeData(
     name: 'Midnight Navy',
@@ -210,6 +225,7 @@ class RetroThemeData {
   );
 
   static List<RetroThemeData> get allThemes => [
+    paperBlue,
     deepNavy,
     parchment,
     gameBoy,
