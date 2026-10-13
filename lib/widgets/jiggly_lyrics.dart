@@ -196,7 +196,12 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
   late AnimationController _steppedController;
   late AnimationController _pulseController;
   final ScrollController _scrollController = ScrollController();
+  final Map<int, GlobalKey> _itemKeys = {};
   int _currentFrame = 0;
+
+  GlobalKey _getKeyForIndex(int index) {
+    return _itemKeys.putIfAbsent(index, () => GlobalKey());
+  }
 
   @override
   void initState() {
@@ -221,27 +226,45 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _scrollToActive();
+      }
+    });
   }
 
   @override
   void didUpdateWidget(covariant JigglyLyricsView oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.activeIndex != widget.activeIndex) {
-      _scrollToActive();
+    if (oldWidget.lyrics != widget.lyrics) {
+      _itemKeys.clear();
+    }
+    if (oldWidget.activeIndex != widget.activeIndex ||
+        oldWidget.lyrics != widget.lyrics) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _scrollToActive();
+        }
+      });
     }
   }
 
   void _scrollToActive() {
-    if (!_scrollController.hasClients) return;
-    const itemEstimatedHeight = 58.0;
-    final targetOffset = (widget.activeIndex * itemEstimatedHeight) -
-        (widget.height / 2) +
-        (itemEstimatedHeight / 2);
-    _scrollController.animateTo(
-      targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeOutCubic,
-    );
+    if (!mounted || !_scrollController.hasClients) return;
+    if (widget.lyrics.isEmpty) return;
+    if (widget.activeIndex < 0 || widget.activeIndex >= widget.lyrics.length) return;
+
+    final key = _itemKeys[widget.activeIndex];
+    final currentContext = key?.currentContext;
+    if (currentContext != null) {
+      Scrollable.ensureVisible(
+        currentContext,
+        alignment: 0.5,
+        duration: const Duration(milliseconds: 320),
+        curve: Curves.easeOutCubic,
+      );
+    }
   }
 
   @override
@@ -249,6 +272,7 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
     _steppedController.dispose();
     _pulseController.dispose();
     _scrollController.dispose();
+    _itemKeys.clear();
     super.dispose();
   }
 
@@ -298,28 +322,35 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
             builder: (context, _) {
               final pulseVal = _pulseController.value;
 
-              return ListView.builder(
+              return SingleChildScrollView(
                 controller: _scrollController,
-                padding: const EdgeInsets.symmetric(vertical: 42, horizontal: 10),
-                itemCount: widget.lyrics.length,
-                itemBuilder: (context, index) {
-                  final line = widget.lyrics[index];
-                  final distance = (index - widget.activeIndex).abs();
-                  final isActive = index == widget.activeIndex;
-                  final isNeighbor = distance == 1;
+                physics: const BouncingScrollPhysics(),
+                padding: EdgeInsets.symmetric(
+                  vertical: (widget.height * 0.44).clamp(90.0, 300.0),
+                  horizontal: 10,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: List.generate(widget.lyrics.length, (index) {
+                    final line = widget.lyrics[index];
+                    final distance = (index - widget.activeIndex).abs();
+                    final isActive = index == widget.activeIndex;
+                    final isNeighbor = distance == 1;
 
-                  if (isActive) {
-                    return _buildActiveLyric(
-                      line: line,
-                      pulseVal: pulseVal,
+                    return KeyedSubtree(
+                      key: _getKeyForIndex(index),
+                      child: isActive
+                          ? _buildActiveLyric(
+                              line: line,
+                              pulseVal: pulseVal,
+                            )
+                          : _buildInactiveLyric(
+                              line: line,
+                              isNeighbor: isNeighbor,
+                            ),
                     );
-                  }
-
-                  return _buildInactiveLyric(
-                    line: line,
-                    isNeighbor: isNeighbor,
-                  );
-                },
+                  }),
+                ),
               );
             },
           ),
