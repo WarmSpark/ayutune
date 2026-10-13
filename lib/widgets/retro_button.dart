@@ -33,7 +33,20 @@ class _RetroButtonState extends State<RetroButton> {
   @override
   Widget build(BuildContext context) {
     final bg = widget.backgroundColor ?? widget.theme.panel;
-    final fg = widget.textColor ?? widget.theme.ink;
+    final isDarkBg = bg.computeLuminance() < 0.45;
+    Color fg;
+    if (widget.textColor != null) {
+      final isDarkFg = widget.textColor!.computeLuminance() < 0.45;
+      if (isDarkBg && isDarkFg) {
+        fg = const Color(0xFFFAF6EE);
+      } else if (!isDarkBg && !isDarkFg) {
+        fg = widget.theme.ink;
+      } else {
+        fg = widget.textColor!;
+      }
+    } else {
+      fg = isDarkBg ? const Color(0xFFFAF6EE) : widget.theme.ink;
+    }
 
     return GestureDetector(
       onTapDown: (_) => setState(() => _isPressed = true),

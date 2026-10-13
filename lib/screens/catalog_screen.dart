@@ -261,19 +261,20 @@ class _CatalogScreenState extends State<CatalogScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Text(
-                'PALETTE:',
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 10,
-                  fontWeight: FontWeight.bold,
-                  color: theme.ink,
-                ),
-              ),
-              const SizedBox(width: 6),
-              Row(
+          Text(
+            'PALETTE:',
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: theme.ink,
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
                 children: RetroThemeData.allThemes.map((item) {
                   final isCurrent = item.type == theme.type;
                   return GestureDetector(
@@ -285,7 +286,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
                       decoration: BoxDecoration(
                         color: item.background,
                         border: Border.all(
-                          color: isCurrent ? item.accentTeal : theme.ink,
+                          color: isCurrent ? item.accentCoral : theme.ink,
                           width: isCurrent ? 2.5 : 1.2,
                         ),
                         shape: BoxShape.circle,
@@ -294,8 +295,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   );
                 }).toList(),
               ),
-            ],
+            ),
           ),
+          const SizedBox(width: 4),
           RetroButton(
             label: '+ CUSTOM',
             theme: theme,
