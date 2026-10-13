@@ -122,7 +122,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    playerService.isCrossfade ? 'FADE' : 'NO-FADE',
+                                    playerService.isCrossfade ? 'FADE: ON' : 'FADE: OFF',
                                     style: TextStyle(
                                       fontFamily: 'monospace',
                                       fontSize: 9,
