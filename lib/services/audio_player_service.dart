@@ -3,11 +3,13 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/track.dart';
+import 'audio_handler.dart';
 import 'innertube_service.dart';
 
 class AudioPlayerService extends ChangeNotifier {
   late final AudioPlayer _player;
   final InnerTubeService _innerTube = InnerTubeService();
+  final AyutuneAudioHandler? audioHandler;
   AndroidLoudnessEnhancer? _loudnessEnhancer;
   AndroidEqualizer? _equalizer;
   bool _isAudioFx = true;
@@ -23,7 +25,7 @@ class AudioPlayerService extends ChangeNotifier {
   StreamSubscription<PlayerState>? _playerStateSubscription;
   StreamSubscription<Duration?>? _durationSubscription;
 
-  AudioPlayerService() {
+  AudioPlayerService({this.audioHandler}) {
     if (!kIsWeb && Platform.isAndroid) {
       _loudnessEnhancer = AndroidLoudnessEnhancer();
       _equalizer = AndroidEqualizer();
@@ -38,6 +40,22 @@ class AudioPlayerService extends ChangeNotifier {
     _initQueue();
     _listenToPlayerStreams();
     _applyAudioFx();
+
+    final handler = audioHandler;
+    if (handler != null) {
+      handler.onPlay = () => togglePlayPause();
+      handler.onPause = () => togglePlayPause();
+      handler.onNext = () => next();
+      handler.onPrevious = () => previous();
+      handler.onSeek = (pos) => seek(pos);
+      handler.onStop = () => obliterate();
+      handler.updateTrack(
+        currentTrack,
+        isPlaying: false,
+        position: Duration.zero,
+        duration: currentTrack.duration,
+      );
+    }
   }
 
   List<Track> get queue => List.unmodifiable(_queue);
@@ -84,15 +102,32 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   void _listenToPlayerStreams() {
-    _positionSubscription = _player.positionStream.listen((_) {
+    _positionSubscription = _player.positionStream.listen((pos) {
+      audioHandler?.updatePlaybackState(
+        isPlaying: _player.playing,
+        position: pos,
+        duration: _player.duration,
+      );
       notifyListeners();
     });
 
-    _durationSubscription = _player.durationStream.listen((_) {
+    _durationSubscription = _player.durationStream.listen((dur) {
+      if (dur != null) {
+        audioHandler?.updatePlaybackState(
+          isPlaying: _player.playing,
+          position: _player.position,
+          duration: dur,
+        );
+      }
       notifyListeners();
     });
 
     _playerStateSubscription = _player.playerStateStream.listen((state) {
+      audioHandler?.updatePlaybackState(
+        isPlaying: state.playing,
+        position: _player.position,
+        duration: _player.duration,
+      );
       if (state.processingState == ProcessingState.completed) {
         _handleTrackCompleted();
       }
@@ -171,10 +206,16 @@ class AudioPlayerService extends ChangeNotifier {
 
   Future<void> _loadAndPlayCurrent() async {
     _isLoading = true;
+    final track = currentTrack;
+    audioHandler?.updateTrack(
+      track,
+      isPlaying: true,
+      position: Duration.zero,
+      duration: track.duration,
+    );
     notifyListeners();
 
     try {
-      final track = currentTrack;
       _fetchLyricsInBackground(track);
 
       await _player.setVolume(_userTargetVolume);
@@ -194,6 +235,12 @@ class AudioPlayerService extends ChangeNotifier {
           await _player.play();
         }
       }
+      audioHandler?.updateTrack(
+        track,
+        isPlaying: true,
+        position: _player.position,
+        duration: _player.duration ?? track.duration,
+      );
     } catch (_) {
     } finally {
       _isLoading = false;
@@ -225,17 +272,28 @@ class AudioPlayerService extends ChangeNotifier {
         await _player.play();
       }
     }
+    audioHandler?.updatePlaybackState(
+      isPlaying: _player.playing,
+      position: _player.position,
+      duration: _player.duration,
+    );
     notifyListeners();
   }
 
   Future<Duration?> seek(Duration position) async {
     await _player.seek(position);
+    audioHandler?.updatePlaybackState(
+      isPlaying: _player.playing,
+      position: position,
+      duration: _player.duration,
+    );
     return null;
   }
 
   void obliterate() {
     _player.stop();
     _player.seek(Duration.zero);
+    audioHandler?.stopPlayback();
     notifyListeners();
   }
 
