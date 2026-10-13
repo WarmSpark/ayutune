@@ -9,6 +9,7 @@ import '../services/offline_service.dart';
 import '../services/playlist_service.dart';
 import '../theme/retro_theme.dart';
 import '../theme/theme_provider.dart';
+import '../widgets/audio_listener_dialog.dart';
 import '../widgets/retro_button.dart';
 import '../widgets/retro_theme_dialog.dart';
 import '../widgets/retro_thumbnail.dart';
@@ -32,8 +33,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   List<Track> _top10Tracks = [];
   List<HitAlbum> _hitAlbums = [];
   List<Track> _globalHits = [];
-  List<Track> _synthHits = [];
-  List<Track> _lofiHits = [];
+  List<Track> _hindiHits = [];
 
   List<Track> _searchResults = [];
   String _selectedCategory = 'ALL';
@@ -47,8 +47,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
     _top10Tracks = _innerTube.getTop10WeeklyTracks();
     _hitAlbums = _innerTube.getHitAlbums();
     _globalHits = _innerTube.getGlobalTopHits();
-    _synthHits = _innerTube.getRetroSynthwaveHits();
-    _lofiHits = _innerTube.getLofiChillHits();
+    _hindiHits = _innerTube.getTrendingHindiHits();
   }
 
   void _onSearch(String query) async {
@@ -133,11 +132,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
                       ? _buildSavedList(theme, playerService)
                       : _selectedCategory == 'TAPES'
                           ? _buildTapesList(theme, playerService)
-                          : _selectedCategory == 'TOP 10'
-                              ? _buildTop10Grid(theme, playerService)
-                              : _selectedCategory == 'ALBUMS'
-                                  ? _buildAlbumsGrid(theme, playerService)
-                                  : _buildNetflixCatalogView(theme, playerService),
+                          : _selectedCategory == 'ALBUMS'
+                              ? _buildAlbumsGrid(theme, playerService)
+                              : _buildNetflixCatalogView(theme, playerService),
         ),
         _buildBottomPlayer(theme, playerService, currentTrack),
       ],
@@ -218,22 +215,32 @@ class _CatalogScreenState extends State<CatalogScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
               RetroButton(
                 label: 'GO',
                 theme: theme,
                 fontSize: 11,
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                 backgroundColor: theme.accentTeal,
                 textColor: const Color(0xFF0C1626),
                 onTap: () => _onSearch(_searchController.text),
               ),
-              const SizedBox(width: 6),
+              const SizedBox(width: 4),
+              RetroButton(
+                label: 'LISTEN',
+                theme: theme,
+                fontSize: 11,
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                backgroundColor: theme.accentYellow,
+                textColor: const Color(0xFF0C1626),
+                onTap: () => _openAudioListener(theme),
+              ),
+              const SizedBox(width: 4),
               RetroButton(
                 label: '+ SPOTIFY',
                 theme: theme,
                 fontSize: 11,
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
                 backgroundColor: theme.accentCoral,
                 textColor: Colors.white,
                 onTap: () => _showSpotifyImportDialog(theme),
@@ -241,21 +248,23 @@ class _CatalogScreenState extends State<CatalogScreen> {
             ],
           ),
           const SizedBox(height: 6),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: [
-                _categoryChip('ALL', theme),
-                _categoryChip('TOP 10', theme),
-                _categoryChip('ALBUMS', theme),
-                _categoryChip('GLOBAL', theme),
-                _categoryChip('SAVED', theme),
-                _categoryChip('TAPES', theme),
-              ],
-            ),
+          Row(
+            children: [
+              _categoryChip('ALL', theme),
+              _categoryChip('SAVED', theme),
+              _categoryChip('TAPES', theme),
+              _categoryChip('ALBUMS', theme),
+            ],
           ),
         ],
       ),
+    );
+  }
+
+  void _openAudioListener(RetroThemeData theme) {
+    showDialog(
+      context: context,
+      builder: (context) => AudioListenerDialog(theme: theme),
     );
   }
 
@@ -363,9 +372,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       children: [
         _buildHeroBanner(theme, playerService),
         const SizedBox(height: 14),
-        _buildShelfHeader('TOP 10 SONGS OF THE WEEK', 'GLOBAL CHART', theme, () {
-          setState(() => _selectedCategory = 'TOP 10');
-        }),
+        _buildShelfHeader('TOP 10 SONGS OF THE WEEK', 'GLOBAL CHART', theme, null),
         const SizedBox(height: 8),
         _buildTop10Shelf(theme, playerService),
         const SizedBox(height: 16),
@@ -379,13 +386,9 @@ class _CatalogScreenState extends State<CatalogScreen> {
         const SizedBox(height: 8),
         _buildTrackShelf(_globalHits, theme, playerService),
         const SizedBox(height: 16),
-        _buildShelfHeader('RETRO SYNTHWAVE & 80S WAVE', 'CYBER VIBES', theme, null),
+        _buildShelfHeader('TRENDING HINDI & BOLLYWOOD HITS', 'DESI TOP CHARTS', theme, null),
         const SizedBox(height: 8),
-        _buildTrackShelf(_synthHits, theme, playerService),
-        const SizedBox(height: 16),
-        _buildShelfHeader('LO-FI CHILL TAPES', 'STUDY & RELAX', theme, null),
-        const SizedBox(height: 8),
-        _buildTrackShelf(_lofiHits, theme, playerService),
+        _buildTrackShelf(_hindiHits, theme, playerService),
         const SizedBox(height: 12),
       ],
     );
@@ -943,128 +946,6 @@ class _CatalogScreenState extends State<CatalogScreen> {
           );
         },
       ),
-    );
-  }
-
-  Widget _buildTop10Grid(RetroThemeData theme, AudioPlayerService playerService) {
-    return GridView.builder(
-      padding: const EdgeInsets.all(8),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        childAspectRatio: 0.76,
-        crossAxisSpacing: 8,
-        mainAxisSpacing: 8,
-      ),
-      itemCount: _top10Tracks.length,
-      itemBuilder: (context, index) {
-        final track = _top10Tracks[index];
-        final rank = index + 1;
-
-        return Container(
-          decoration: BoxDecoration(
-            color: theme.panel,
-            border: Border.all(color: theme.ink, width: 2),
-          ),
-          child: InkWell(
-            onTap: () => playerService.playTrack(track),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Stack(
-                  children: [
-                    Container(
-                      width: double.infinity,
-                      height: 120,
-                      decoration: BoxDecoration(
-                        border: Border(
-                          bottom: BorderSide(color: theme.ink, width: 1.5),
-                        ),
-                      ),
-                      child: RetroThumbnail(
-                        url: track.thumbnailUrl,
-                        width: double.infinity,
-                        height: 120,
-                        theme: theme,
-                      ),
-                    ),
-                    Positioned(
-                      top: 4,
-                      left: 4,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: theme.accentCoral,
-                          border: Border.all(color: theme.ink, width: 1.2),
-                        ),
-                        child: Text(
-                          '#$rank',
-                          style: const TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(6),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        track.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: theme.ink,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        track.artist,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 9,
-                          color: theme.inkDim,
-                        ),
-                      ),
-                      const SizedBox(height: 6),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            _formatDuration(track.duration),
-                            style: TextStyle(
-                              fontFamily: 'monospace',
-                              fontSize: 9,
-                              color: theme.inkDim,
-                            ),
-                          ),
-                          RetroButton(
-                            label: 'PLAY',
-                            theme: theme,
-                            fontSize: 9,
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                            onTap: () => playerService.playTrack(track),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 

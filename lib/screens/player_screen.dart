@@ -66,8 +66,8 @@ class _PlayerScreenState extends State<PlayerScreen> {
                               GestureDetector(
                                 onTap: () => playerService.toggleAudioFx(),
                                 child: Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                  margin: const EdgeInsets.only(right: 6),
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                                  margin: const EdgeInsets.only(right: 4),
                                   decoration: BoxDecoration(
                                     color: playerService.isAudioFx ? theme.accentCoral : theme.background,
                                     border: Border.all(
@@ -76,29 +76,78 @@ class _PlayerScreenState extends State<PlayerScreen> {
                                     ),
                                   ),
                                   child: Text(
-                                    playerService.isAudioFx ? 'FX: HD' : 'FX: OFF',
+                                    playerService.isAudioFx ? 'FX' : 'NO-FX',
                                     style: TextStyle(
                                       fontFamily: 'monospace',
-                                      fontSize: 10,
+                                      fontSize: 9,
                                       fontWeight: FontWeight.bold,
                                       color: playerService.isAudioFx ? Colors.white : theme.inkDim,
                                     ),
                                   ),
                                 ),
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: theme.background,
-                                  border: Border.all(color: theme.accentTeal, width: 1.5),
+                              GestureDetector(
+                                onTap: () => playerService.toggleBeatHaptic(),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                                  margin: const EdgeInsets.only(right: 4),
+                                  decoration: BoxDecoration(
+                                    color: playerService.isBeatHaptic ? theme.accentCoral : theme.background,
+                                    border: Border.all(
+                                      color: playerService.isBeatHaptic ? theme.ink : theme.inkDim,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    playerService.isBeatHaptic ? 'BEAT' : 'NO-BEAT',
+                                    style: TextStyle(
+                                      fontFamily: 'monospace',
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                      color: playerService.isBeatHaptic ? Colors.white : theme.inkDim,
+                                    ),
+                                  ),
                                 ),
-                                child: Text(
-                                  playerService.isAutoplay ? 'AUTO: ON' : 'AUTO: OFF',
-                                  style: TextStyle(
-                                    fontFamily: 'monospace',
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: theme.accentTeal,
+                              ),
+                              GestureDetector(
+                                onTap: () => playerService.toggleCrossfade(),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                                  margin: const EdgeInsets.only(right: 4),
+                                  decoration: BoxDecoration(
+                                    color: playerService.isCrossfade ? theme.accentTeal : theme.background,
+                                    border: Border.all(
+                                      color: playerService.isCrossfade ? theme.ink : theme.inkDim,
+                                      width: 1.5,
+                                    ),
+                                  ),
+                                  child: Text(
+                                    playerService.isCrossfade ? 'FADE' : 'NO-FADE',
+                                    style: TextStyle(
+                                      fontFamily: 'monospace',
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                      color: playerService.isCrossfade ? const Color(0xFF0C1626) : theme.inkDim,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              GestureDetector(
+                                onTap: () => playerService.toggleAutoplay(),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 3),
+                                  decoration: BoxDecoration(
+                                    color: playerService.isAutoplay ? theme.accentTeal : theme.background,
+                                    border: Border.all(color: theme.accentTeal, width: 1.5),
+                                  ),
+                                  child: Text(
+                                    playerService.isAutoplay ? 'AUTO' : 'MANUAL',
+                                    style: TextStyle(
+                                      fontFamily: 'monospace',
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold,
+                                      color: playerService.isAutoplay ? const Color(0xFF0C1626) : theme.accentTeal,
+                                    ),
                                   ),
                                 ),
                               ),
@@ -136,6 +185,10 @@ class _PlayerScreenState extends State<PlayerScreen> {
                         totalDuration: playerService.totalDuration,
                         onSeek: (pos) => playerService.seek(pos),
                       ),
+                      if (playerService.nextTrack != null) ...[
+                        const SizedBox(height: 8),
+                        _buildUpNextBar(theme, playerService, playerService.nextTrack!),
+                      ],
                     ],
                   ),
                 ),
@@ -170,6 +223,90 @@ class _PlayerScreenState extends State<PlayerScreen> {
             color: isSelected ? theme.background : theme.ink,
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildUpNextBar(
+    RetroThemeData theme,
+    AudioPlayerService playerService,
+    dynamic nextTrack,
+  ) {
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.background,
+        border: Border.all(color: theme.ink, width: 1.5),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+            decoration: BoxDecoration(
+              color: theme.accentTeal,
+              border: Border.all(color: theme.ink, width: 1.2),
+            ),
+            child: const Text(
+              'UP NEXT',
+              style: TextStyle(
+                fontFamily: 'monospace',
+                fontSize: 9,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF0C1626),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  nextTrack.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                    color: theme.ink,
+                  ),
+                ),
+                Text(
+                  nextTrack.artist,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 9,
+                    color: theme.inkDim,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 6),
+          GestureDetector(
+            onTap: () => playerService.next(),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: theme.ink,
+                border: Border.all(color: theme.ink, width: 1.2),
+              ),
+              child: Text(
+                'SKIP >>',
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: theme.background,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -139,10 +139,11 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
 
   void _scrollToActive() {
     if (!_scrollController.hasClients) return;
-    const itemEstimatedHeight = 64.0;
+    const itemEstimatedHeight = 60.0;
     final targetOffset = (widget.activeIndex * itemEstimatedHeight) -
         (widget.height / 2) +
-        (itemEstimatedHeight / 2);
+        (itemEstimatedHeight / 2) +
+        20.0;
     _scrollController.animateTo(
       targetOffset.clamp(0.0, _scrollController.position.maxScrollExtent),
       duration: const Duration(milliseconds: 320),
@@ -183,6 +184,7 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
     return Container(
       width: double.infinity,
       height: widget.height,
+      clipBehavior: Clip.hardEdge,
       decoration: BoxDecoration(
         color: widget.theme.background,
         border: Border.all(color: widget.theme.ink, width: 2),
@@ -199,7 +201,7 @@ class _JigglyLyricsViewState extends State<JigglyLyricsView>
           ),
           ListView.builder(
             controller: _scrollController,
-            padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 12),
+            padding: const EdgeInsets.symmetric(vertical: 54, horizontal: 12),
             itemCount: widget.lyrics.length,
             itemBuilder: (context, index) {
               final line = widget.lyrics[index];

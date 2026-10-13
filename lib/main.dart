@@ -5,9 +5,7 @@ import 'screens/player_screen.dart';
 import 'services/audio_player_service.dart';
 import 'services/offline_service.dart';
 import 'services/playlist_service.dart';
-import 'theme/retro_theme.dart';
 import 'theme/theme_provider.dart';
-import 'widgets/retro_theme_dialog.dart';
 import 'widgets/retro_window.dart';
 
 void main() {
@@ -53,16 +51,6 @@ class _AyutuneHomeScreenState extends State<AyutuneHomeScreen> {
     PlaylistService().init();
   }
 
-  void _openThemeDialog(RetroThemeData theme, ThemeProvider themeProvider) {
-    showDialog(
-      context: context,
-      builder: (context) => RetroThemeDialog(
-        theme: theme,
-        themeProvider: themeProvider,
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -78,12 +66,6 @@ class _AyutuneHomeScreenState extends State<AyutuneHomeScreen> {
           ),
           child: Column(
             children: [
-              RetroWindowHeader(
-                theme: theme,
-                title: 'ayutune.apk',
-                onFilesTap: () => setState(() => _selectedTabIndex = 1),
-                onThemeTap: () => _openThemeDialog(theme, themeProvider),
-              ),
               RetroNavTabs(
                 theme: theme,
                 selectedTab: _selectedTabIndex,

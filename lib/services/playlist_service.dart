@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/lyric_line.dart';
 import '../models/playlist.dart';
 import '../models/track.dart';
+import 'innertube_service.dart';
 
 class PlaylistService {
   static final PlaylistService _instance = PlaylistService._internal();
@@ -58,6 +59,34 @@ class PlaylistService {
           );
         }
       } catch (_) {}
+    }
+    _backgroundResolveThumbnails();
+  }
+
+  Future<void> _backgroundResolveThumbnails() async {
+    bool hasUpdates = false;
+    for (int pIdx = 0; pIdx < _playlists.length; pIdx++) {
+      final playlist = _playlists[pIdx];
+      final updatedTracks = <Track>[];
+      bool playlistUpdated = false;
+      for (final track in playlist.tracks) {
+        if (track.thumbnailUrl == null || track.thumbnailUrl!.isEmpty) {
+          final thumb = await InnerTubeService().resolveThumbnail(track.title, track.artist);
+          if (thumb != null && thumb.isNotEmpty) {
+            updatedTracks.add(track.copyWith(thumbnailUrl: thumb));
+            playlistUpdated = true;
+            continue;
+          }
+        }
+        updatedTracks.add(track);
+      }
+      if (playlistUpdated) {
+        _playlists[pIdx] = playlist.copyWith(tracks: updatedTracks);
+        hasUpdates = true;
+      }
+    }
+    if (hasUpdates) {
+      await _persist();
     }
   }
 
@@ -128,30 +157,38 @@ class PlaylistService {
       final trackList = (entity['trackList'] as List?) ?? [];
 
       final List<Track> importedTracks = [];
+      final futures = <Future<Track>>[];
       for (int i = 0; i < trackList.length; i++) {
         final t = trackList[i];
         final title = (t['title']?.toString() ?? 'UNTITLED').toUpperCase();
         final artist = (t['subtitle']?.toString() ?? 'UNKNOWN').toUpperCase();
         final durMs = t['duration'] as int? ?? 180000;
-        final thumb = t['imageUrl']?.toString();
+        final initialThumb = t['imageUrl']?.toString();
 
-        importedTracks.add(
-          Track(
+        futures.add(() async {
+          String? resolvedThumb = initialThumb;
+          if (resolvedThumb == null || resolvedThumb.isEmpty) {
+            resolvedThumb = await InnerTubeService().resolveThumbnail(title, artist);
+          }
+          return Track(
             id: 'sp_${playlistId}_$i',
             title: title,
             artist: artist,
             duration: Duration(milliseconds: durMs),
             genreTag: 'SPOTIFY',
-            thumbnailUrl: thumb,
+            thumbnailUrl: resolvedThumb,
             isOffline: false,
             lyrics: [
               LyricLine(timestamp: Duration.zero, text: 'PLAYING: $title'),
               LyricLine(timestamp: const Duration(seconds: 4), text: 'ARTIST: $artist'),
               const LyricLine(timestamp: Duration(seconds: 8), text: 'SYNCHRONIZING RETRO LYRICS...'),
             ],
-          ),
-        );
+          );
+        }());
       }
+
+      final resolvedList = await Future.wait(futures);
+      importedTracks.addAll(resolvedList);
 
       final importedPlaylist = Playlist(
         id: 'tape_sp_${DateTime.now().millisecondsSinceEpoch}',

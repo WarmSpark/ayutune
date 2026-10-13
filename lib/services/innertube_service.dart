@@ -4,6 +4,7 @@ import 'package:dart_des/dart_des.dart';
 import '../models/hit_album.dart';
 import '../models/lyric_line.dart';
 import '../models/track.dart';
+import '../utils/hindi_transliterate.dart';
 
 class ResolvedStream {
   final String url;
@@ -363,20 +364,169 @@ class InnerTubeService {
       ],
     ),
     const HitAlbum(
+      id: 'alb_rockstar',
+      title: 'ROCKSTAR',
+      artist: 'A.R. RAHMAN, MOHIT CHAUHAN',
+      year: '2011',
+      thumbnailUrl: 'https://c.saavncdn.com/408/Rockstar-Hindi-2011-20221212023139-500x500.webp',
+      tracks: [
+        Track(
+          id: 'cymtugLP',
+          title: 'PHIR SE UD CHALA',
+          artist: 'MOHIT CHAUHAN',
+          duration: Duration(minutes: 4, seconds: 31),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/408/Rockstar-Hindi-2011-20221212023139-500x500.webp',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDy/ppBf/jPoPNP9oH/DaD4SW7U9cCFdptDJtFr0ni45Z8zogGKZpS8/Rw7tS9a8Gtq',
+          lyrics: [],
+        ),
+        Track(
+          id: 'csaEsVWV',
+          title: 'KUN FAAYA KUN',
+          artist: 'A.R. RAHMAN, JAVED ALI, MOHIT CHAUHAN',
+          duration: Duration(minutes: 7, seconds: 53),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/408/Rockstar-Hindi-2011-20221212023139-500x500.webp',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDy0NL2fhoz6rPcH6jrM1vhe9oo991oLsDKrT+AKRs/fNkIICRugHAnthw7tS9a8Gtq',
+          lyrics: [],
+        ),
+        Track(
+          id: 'W3ZAWX5t',
+          title: 'NADAAN PARINDEY',
+          artist: 'A.R. RAHMAN, MOHIT CHAUHAN',
+          duration: Duration(minutes: 6, seconds: 26),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/408/Rockstar-Hindi-2011-20221212023139-500x500.webp',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDykrTFgKmwvDUq2oRvw9qS6mJNemTfAWonMQjAxlGjOnQGZfKfUDJvkBw7tS9a8Gtq',
+          lyrics: [],
+        ),
+        Track(
+          id: 'jE4Mjfr0',
+          title: 'SAADDA HAQ',
+          artist: 'A.R. RAHMAN, MOHIT CHAUHAN',
+          duration: Duration(minutes: 6, seconds: 5),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/408/Rockstar-Hindi-2011-20221212023139-500x500.webp',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyXmifZ5qrOyy55D2Js3O2GomLctKwo3j0YitNebn7Piw3P/YCYMgfrRw7tS9a8Gtq',
+          lyrics: [],
+        ),
+      ],
+    ),
+    const HitAlbum(
+      id: 'alb_yjhd',
+      title: 'YEH JAWAANI HAI DEEWANI',
+      artist: 'PRITAM',
+      year: '2013',
+      thumbnailUrl: 'https://c.saavncdn.com/440/Yeh-Jawaani-Hai-Deewani-2013-500x500.jpg',
+      tracks: [
+        Track(
+          id: 'NLVt_02H',
+          title: 'BADTAMEEZ DIL',
+          artist: 'PRITAM, BENNY DAYAL',
+          duration: Duration(minutes: 4, seconds: 13),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/440/Yeh-Jawaani-Hai-Deewani-2013-500x500.jpg',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDy+NdW8NoKOEeWeF1KVJSJfUrHCUTkPEWKob4UWAv6kTr+vltdONUK2hw7tS9a8Gtq',
+          lyrics: [],
+        ),
+        Track(
+          id: 'rh1gIwY_',
+          title: 'BALAM PICHKARI',
+          artist: 'PRITAM, VISHAL DADLANI',
+          duration: Duration(minutes: 4, seconds: 50),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/440/Yeh-Jawaani-Hai-Deewani-2013-500x500.jpg',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDy9vxjz7NpebVTZtc/cW+bEY8UsGVC1Rp7XOlnUdUoQ+D+e7hTKH8x0Rw7tS9a8Gtq',
+          lyrics: [],
+        ),
+        Track(
+          id: 'Cyu6QA-C',
+          title: 'KABIRA',
+          artist: 'PRITAM, TOCHI RAINA',
+          duration: Duration(minutes: 3, seconds: 44),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/440/Yeh-Jawaani-Hai-Deewani-2013-500x500.jpg',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyLMS0VziPdow/7NYAeyUtQBmbQ2617QxSd38MjjdL8yfqSBxVnbRMcRw7tS9a8Gtq',
+          lyrics: [],
+        ),
+        Track(
+          id: '4CI_0bzt',
+          title: 'ILAHI',
+          artist: 'PRITAM, ARIJIT SINGH',
+          duration: Duration(minutes: 3, seconds: 50),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/440/Yeh-Jawaani-Hai-Deewani-2013-500x500.jpg',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDym0VCARSEqtZ0flZM9KDXOKeWEglBeLkFEJm1BlORKG3ZOBgiTUnD0Bw7tS9a8Gtq',
+          lyrics: [],
+        ),
+      ],
+    ),
+    const HitAlbum(
+      id: 'alb_kabir',
+      title: 'KABIR SINGH',
+      artist: 'SACHET TANDON, ARIJIT SINGH',
+      year: '2019',
+      thumbnailUrl: 'https://c.saavncdn.com/807/Kabir-Singh-Hindi-2019-20240131131003-500x500.webp',
+      tracks: [
+        Track(
+          id: 'OtKh5C06',
+          title: 'BEKHAYALI',
+          artist: 'SACHET TANDON',
+          duration: Duration(minutes: 6, seconds: 11),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/807/Kabir-Singh-Hindi-2019-20240131131003-500x500.webp',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDy+5awU/pXqOXobkQ5cRkYRBE+SxNoZcKp3TtPSotNlPXlgkBxCfDFmhw7tS9a8Gtq',
+          lyrics: [],
+        ),
+        Track(
+          id: 'uf2JX_12',
+          title: 'TERA BAN JAUNGA',
+          artist: 'AKHIL SACHDEVA, TULSI KUMAR',
+          duration: Duration(minutes: 3, seconds: 56),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/807/Kabir-Singh-Hindi-2019-20240131131003-500x500.webp',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyZ+uq0dWXd2pT86Oq+2zfl0nFuo7Y3p6hSzbHsKIX41Ab2T/Z8ruYiBw7tS9a8Gtq',
+          lyrics: [],
+        ),
+        Track(
+          id: 'Ke9TPSUf',
+          title: 'TUJHE KITNA CHAHNE LAGE',
+          artist: 'ARIJIT SINGH',
+          duration: Duration(minutes: 4, seconds: 44),
+          genreTag: 'ALBUM',
+          isOffline: false,
+          thumbnailUrl: 'https://c.saavncdn.com/807/Kabir-Singh-Hindi-2019-20240131131003-500x500.webp',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDy/52kQH4hOw1gKr/n7zYQyyTAuSlX1EAhxelVbiUbKSZgLAg6CXhAqxw7tS9a8Gtq',
+          lyrics: [],
+        ),
+      ],
+    ),
+    const HitAlbum(
       id: 'alb_aashiqui2',
       title: 'AASHIQUI 2',
       artist: 'ARIJIT SINGH, MITHOON',
       year: '2013',
-      thumbnailUrl: 'https://c.saavncdn.com/835/Aashiqui-2-Hindi-2013-20201215180126-500x500.webp',
+      thumbnailUrl: 'https://c.saavncdn.com/430/Aashiqui-2-Hindi-2013-500x500.jpg',
       tracks: [
         Track(
-          id: 'a2_tumhiho',
+          id: 'aRZbUYD7',
           title: 'TUM HI HO',
           artist: 'ARIJIT SINGH',
           duration: Duration(minutes: 4, seconds: 22),
           genreTag: 'ALBUM',
           isOffline: false,
-          thumbnailUrl: 'https://c.saavncdn.com/835/Aashiqui-2-Hindi-2013-20201215180126-500x500.webp',
+          thumbnailUrl: 'https://c.saavncdn.com/430/Aashiqui-2-Hindi-2013-500x500.jpg',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyRofh8YQPTqjR2tIxTYXqGEQHgqnNfsetouo4rsD0s4RZKObWAyHrEhw7tS9a8Gtq',
           lyrics: [],
         ),
         Track(
@@ -386,17 +536,8 @@ class InnerTubeService {
           duration: Duration(minutes: 6, seconds: 30),
           genreTag: 'ALBUM',
           isOffline: false,
-          thumbnailUrl: 'https://c.saavncdn.com/835/Aashiqui-2-Hindi-2013-20201215180126-500x500.webp',
-          lyrics: [],
-        ),
-        Track(
-          id: 'a2_chahun',
-          title: 'CHAHUN MAIN YA NAA',
-          artist: 'ARIJIT SINGH, PALAK MUCHHAL',
-          duration: Duration(minutes: 5, seconds: 4),
-          genreTag: 'ALBUM',
-          isOffline: false,
-          thumbnailUrl: 'https://c.saavncdn.com/835/Aashiqui-2-Hindi-2013-20201215180126-500x500.webp',
+          thumbnailUrl: 'https://c.saavncdn.com/430/Aashiqui-2-Hindi-2013-500x500.jpg',
+          audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyRofh8YQPTqjR2tIxTYXqGEQHgqnNfsetouo4rsD0s4RZKObWAyHrEhw7tS9a8Gtq',
           lyrics: [],
         ),
       ],
@@ -428,145 +569,210 @@ class InnerTubeService {
           thumbnailUrl: 'https://c.saavncdn.com/829/Parachutes-English-2000-20240402164415-500x500.webp',
           lyrics: [],
         ),
-        Track(
-          id: 'cp_trouble',
-          title: 'TROUBLE',
-          artist: 'COLDPLAY',
-          duration: Duration(minutes: 4, seconds: 30),
-          genreTag: 'ALBUM',
-          isOffline: false,
-          thumbnailUrl: 'https://c.saavncdn.com/829/Parachutes-English-2000-20240402164415-500x500.webp',
-          lyrics: [],
-        ),
       ],
     ),
   ];
 
   final List<Track> _globalHits = [
     const Track(
-      id: 'gh_heatwaves',
+      id: 'Xa-gCchY',
       title: 'HEAT WAVES',
       artist: 'GLASS ANIMALS',
       duration: Duration(minutes: 3, seconds: 58),
       genreTag: 'GLOBAL',
       isOffline: false,
-      thumbnailUrl: 'https://c.saavncdn.com/279/Dreamland-English-2020-20200806041014-500x500.jpg',
+      thumbnailUrl: 'https://c.saavncdn.com/946/Rock-is-Back-2026-Mix-English-2026-20260709135120-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyBTnEK04pheKK5ye2STPX90HB726PQazKYT++Np1U/ozRXJhFmRnj3xw7tS9a8Gtq',
       lyrics: [],
     ),
     const Track(
-      id: 'gh_stay',
+      id: 'kd8JSDbB',
       title: 'STAY',
       artist: 'THE KID LAROI, JUSTIN BIEBER',
       duration: Duration(minutes: 2, seconds: 21),
       genreTag: 'GLOBAL',
       isOffline: false,
-      thumbnailUrl: 'https://c.saavncdn.com/492/Stay-English-2021-20210708043232-500x500.jpg',
+      thumbnailUrl: 'https://c.saavncdn.com/895/Stay-English-2021-20210706223809-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDy22ySPcQSnx3B+iF8BVZQ3e4M9E7vZnhJS+XjJSV0B4lB0xznhm2SlRw7tS9a8Gtq',
       lyrics: [],
     ),
     const Track(
-      id: 'gh_sunflower',
+      id: 'IF2UR2N2',
       title: 'SUNFLOWER',
       artist: 'POST MALONE, SWAE LEE',
       duration: Duration(minutes: 2, seconds: 38),
       genreTag: 'GLOBAL',
       isOffline: false,
-      thumbnailUrl: 'https://c.saavncdn.com/812/Spider-Man-Into-the-Spider-Verse-Soundtrack-English-2018-20181213031014-500x500.jpg',
+      thumbnailUrl: 'https://c.saavncdn.com/504/The-Diamond-Collection-English-2023-20240201105640-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyVQH47rGvN0NOGkEHcCzTYKOBrCH2Ze6XghaP0fXzwa5JPRgrs/DKIRw7tS9a8Gtq',
       lyrics: [],
     ),
     const Track(
-      id: 'gh_shapeofyou',
+      id: '_w-V_N2t',
+      title: 'LEVITATING',
+      artist: 'DUA LIPA',
+      duration: Duration(minutes: 3, seconds: 23),
+      genreTag: 'GLOBAL',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/207/Dua-Lipa-Live-From-Mexico-English-2026-20260526161014-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyV0jiQWZGozunXPYHhqlHBQEaiwq449aD4UYNwBi63hSguyE8r7VSKhw7tS9a8Gtq',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'bwopJe3Y',
+      title: 'INDUSTRY BABY',
+      artist: 'LIL NAS X, JACK HARLOW',
+      duration: Duration(minutes: 3, seconds: 34),
+      genreTag: 'GLOBAL',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/440/MONTERO-English-2021-20210914233101-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyilJQeDCMN39dDQ89Ojg8LqcneBp+NZYBXZfhwz36zdgLy0OuiX9wLhw7tS9a8Gtq',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'icJam_5l',
       title: 'SHAPE OF YOU',
       artist: 'ED SHEERAN',
       duration: Duration(minutes: 3, seconds: 53),
       genreTag: 'GLOBAL',
       isOffline: false,
-      thumbnailUrl: 'https://c.saavncdn.com/869/Shape-of-You-English-2017-500x500.jpg',
-      lyrics: [],
-    ),
-    const Track(
-      id: 'gh_onedance',
-      title: 'ONE DANCE',
-      artist: 'DRAKE, WIZKID, KYLA',
-      duration: Duration(minutes: 2, seconds: 54),
-      genreTag: 'GLOBAL',
-      isOffline: false,
-      thumbnailUrl: 'https://c.saavncdn.com/978/Views-English-2016-500x500.jpg',
+      thumbnailUrl: 'https://c.saavncdn.com/126/Shape-of-You-English-2017-500x500.jpg',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyrbd+HcWncZZoemb80Tc5P2Jgrpnh/kigWgy0UPcVXF1Z4sdM/ulXnBw7tS9a8Gtq',
       lyrics: [],
     ),
   ];
 
-  final List<Track> _synthwaveHits = [
+  final List<Track> _trendingHindiHits = [
     const Track(
-      id: 'synth_midnight',
-      title: 'MIDNIGHT CITY',
-      artist: 'M83',
-      duration: Duration(minutes: 4, seconds: 3),
-      genreTag: 'SYNTH',
+      id: 'aRZbUYD7',
+      title: 'TUM HI HO',
+      artist: 'ARIJIT SINGH, MITHOON',
+      duration: Duration(minutes: 4, seconds: 22),
+      genreTag: 'HINDI',
       isOffline: false,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=500',
+      thumbnailUrl: 'https://c.saavncdn.com/430/Aashiqui-2-Hindi-2013-500x500.jpg',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyRofh8YQPTqjR2tIxTYXqGEQHgqnNfsetouo4rsD0s4RZKObWAyHrEhw7tS9a8Gtq',
+      lyrics: [
+        LyricLine(timestamp: Duration.zero, text: 'HUM TERE BIN AB REH NAHI SAKTE'),
+        LyricLine(timestamp: Duration(seconds: 10), text: 'TERE BINA KYA WAJOOD MERA'),
+        LyricLine(timestamp: Duration(seconds: 20), text: 'TUJHSE JUDA AGAR HO JAAYENGE'),
+        LyricLine(timestamp: Duration(seconds: 30), text: 'TOH KHUD SE HI HO JAAYENGE JUDAA'),
+        LyricLine(timestamp: Duration(seconds: 40), text: 'KYUNKI TUM HI HO AB TUM HI HO'),
+        LyricLine(timestamp: Duration(seconds: 52), text: 'ZINDAGI AB TUM HI HO'),
+        LyricLine(timestamp: Duration(minutes: 1, seconds: 5), text: 'CHAIN BHI MERA DARD BHI'),
+        LyricLine(timestamp: Duration(minutes: 1, seconds: 15), text: 'MERI AASHIQUI AB TUM HI HO'),
+      ],
+    ),
+    const Track(
+      id: 'rjkrTnma',
+      title: 'KESARIYA',
+      artist: 'PRITAM, ARIJIT SINGH',
+      duration: Duration(minutes: 4, seconds: 28),
+      genreTag: 'HINDI',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/871/Brahmastra-Original-Motion-Picture-Soundtrack-Hindi-2022-20221006155213-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyryhkSYK5IH2E7FCO52VR6yhNbcEbes5iCcja4+W8xhE0SwtCJToN4Bw7tS9a8Gtq',
+      lyrics: [
+        LyricLine(timestamp: Duration.zero, text: 'MUJHKO ITNA BATAAYE KOI'),
+        LyricLine(timestamp: Duration(seconds: 12), text: 'KAISE TUJHSE DIL NA LAGAAYE KOI'),
+        LyricLine(timestamp: Duration(seconds: 25), text: 'KESARIYA TERA ISHQ HAI PIYA'),
+        LyricLine(timestamp: Duration(seconds: 36), text: 'RANG JAAUN JO MAIN HAATH LAGAAUN'),
+        LyricLine(timestamp: Duration(seconds: 48), text: 'DIN BEETE SAARA TERI FIKR MEIN'),
+        LyricLine(timestamp: Duration(minutes: 1, seconds: 0), text: 'RAIN SAARI TERI KHAIR MANAAUN'),
+      ],
+    ),
+    const Track(
+      id: '36EzeLeh',
+      title: 'CHANNA MEREYA',
+      artist: 'PRITAM, ARIJIT SINGH',
+      duration: Duration(minutes: 4, seconds: 49),
+      genreTag: 'HINDI',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/608/Ae-Dil-Hai-Mushkil-Deluxe-Edition-Hindi-2016-500x500.jpg',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyE21juebM1GeqgoVRUO8YvrRXI80zZ0SJi0FWikBx5Axg1475ZSh2jBw7tS9a8Gtq',
+      lyrics: [
+        LyricLine(timestamp: Duration.zero, text: 'ACHHA CHALTA HOON DUAON MEIN YAAD RAKHNA'),
+        LyricLine(timestamp: Duration(seconds: 15), text: 'MERE ZIKR KA ZUBAAN PE SWAAD RAKHNA'),
+        LyricLine(timestamp: Duration(seconds: 30), text: 'ANDHERA TERA MAINE LE LIYA'),
+        LyricLine(timestamp: Duration(seconds: 45), text: 'MERA UJLA SITARA TERE NAAM KIYA'),
+        LyricLine(timestamp: Duration(minutes: 1, seconds: 2), text: 'CHANNA MEREYA MEREYA'),
+      ],
+    ),
+    const Track(
+      id: 'qZtKBMZ_',
+      title: 'APNA BANA LE',
+      artist: 'SACHIN-JIGAR, ARIJIT SINGH',
+      duration: Duration(minutes: 4, seconds: 21),
+      genreTag: 'HINDI',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/815/Bhediya-Hindi-2023-20230927155213-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDylA8lQwDowJF0rwulZQb41oGFWui//Ii/9d8Rp0MdqrAGAnyTSi1MVxw7tS9a8Gtq',
       lyrics: [],
     ),
     const Track(
-      id: 'synth_nightcall',
-      title: 'NIGHTCALL',
-      artist: 'KAVINSKY',
-      duration: Duration(minutes: 4, seconds: 19),
-      genreTag: 'SYNTH',
+      id: 'wcsDiSsA',
+      title: 'O MAAHI',
+      artist: 'PRITAM, ARIJIT SINGH',
+      duration: Duration(minutes: 3, seconds: 53),
+      genreTag: 'HINDI',
       isOffline: false,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=500',
+      thumbnailUrl: 'https://c.saavncdn.com/139/Dunki-Hindi-2023-20231220211003-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyaj3rrWAaDMHeM7u6wtD1ZM6frdiKRfD/QBCoWuXT2UpkzzD1uAXw4Rw7tS9a8Gtq',
       lyrics: [],
     ),
     const Track(
-      id: 'synth_resonance',
-      title: 'RESONANCE',
-      artist: 'HOME',
-      duration: Duration(minutes: 3, seconds: 32),
-      genreTag: 'SYNTH',
+      id: '1e0En7YX',
+      title: 'PEHLE BHI MAIN',
+      artist: 'VISHAL MISHRA',
+      duration: Duration(minutes: 4, seconds: 10),
+      genreTag: 'HINDI',
       isOffline: false,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=500',
+      thumbnailUrl: 'https://c.saavncdn.com/092/ANIMAL-Hindi-2023-20260724191152-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyMEGvIxEnyuexZ9XCxzNDCPmQA2BlelU633QSdM0/p0MkuVstwn70Ghw7tS9a8Gtq',
       lyrics: [],
     ),
     const Track(
-      id: 'synth_perfectgirl',
-      title: 'THE PERFECT GIRL',
-      artist: 'MAREUX',
-      duration: Duration(minutes: 3, seconds: 14),
-      genreTag: 'SYNTH',
+      id: 'mPTrDSun',
+      title: 'RAATAAN LAMBIYAN',
+      artist: 'JUBIN NAUTIYAL, ASEES KAUR',
+      duration: Duration(minutes: 3, seconds: 50),
+      genreTag: 'HINDI',
       isOffline: false,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500',
-      lyrics: [],
-    ),
-  ];
-
-  final List<Track> _lofiHits = [
-    const Track(
-      id: 'lofi_snowman',
-      title: 'SNOWMAN',
-      artist: 'WYS',
-      duration: Duration(minutes: 3, seconds: 15),
-      genreTag: 'LO-FI',
-      isOffline: false,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=500',
+      thumbnailUrl: 'https://c.saavncdn.com/238/Shershaah-Original-Motion-Picture-Soundtrack--Hindi-2021-20210815181610-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyEhpWcgInUN2N4VROTFWzTYRfHFLF1ifURtskLLkiSEQZD888XQgsbBw7tS9a8Gtq',
       lyrics: [],
     ),
     const Track(
-      id: 'lofi_affection',
-      title: 'AFFECTION',
-      artist: 'JINSANG',
-      duration: Duration(minutes: 2, seconds: 40),
-      genreTag: 'LO-FI',
+      id: '_rJmbKSP',
+      title: 'SHAYAD',
+      artist: 'PRITAM, ARIJIT SINGH',
+      duration: Duration(minutes: 4, seconds: 7),
+      genreTag: 'HINDI',
       isOffline: false,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=500',
+      thumbnailUrl: 'https://c.saavncdn.com/862/Love-Aaj-Kal-Hindi-2020-20200214140423-500x500.webp',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyT19PzAX7YyzgkHYWQybH7xN4MJMIg+vv6YsG3yMFglt8bvlJKKDQQRw7tS9a8Gtq',
       lyrics: [],
     ),
     const Track(
-      id: 'lofi_coffee',
-      title: 'COFFEE',
-      artist: 'BEABADOOBEE',
-      duration: Duration(minutes: 2, seconds: 6),
-      genreTag: 'LO-FI',
+      id: 'Ni6noMmw',
+      title: 'AGAR TUM SAATH HO',
+      artist: 'ALKA YAGNIK, ARIJIT SINGH',
+      duration: Duration(minutes: 5, seconds: 41),
+      genreTag: 'HINDI',
       isOffline: false,
-      thumbnailUrl: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=500',
+      thumbnailUrl: 'https://c.saavncdn.com/994/Tamasha-Hindi-2015-500x500.jpg',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDy0GF7amDM+kR6MPgL6n1NCvHZAAa0+qM2vRmrw+iF1mtXa+r1rfsRTRw7tS9a8Gtq',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'Cyu6QA-C',
+      title: 'KABIRA',
+      artist: 'TOCHI RAINA, REKHA BHARDWAJ',
+      duration: Duration(minutes: 3, seconds: 44),
+      genreTag: 'HINDI',
+      isOffline: false,
+      thumbnailUrl: 'https://c.saavncdn.com/440/Yeh-Jawaani-Hai-Deewani-2013-500x500.jpg',
+      audioUrl: 'ID2ieOjCrwfgWvL5sXl4B1ImC5QfbsDyLMS0VziPdow/7NYAeyUtQBmbQ2617QxSd38MjjdL8yfqSBxVnbRMcRw7tS9a8Gtq',
       lyrics: [],
     ),
   ];
@@ -575,8 +781,7 @@ class InnerTubeService {
   List<Track> getTop10WeeklyTracks() => List.unmodifiable(_top10WeeklyTracks);
   List<HitAlbum> getHitAlbums() => List.unmodifiable(_hitAlbums);
   List<Track> getGlobalTopHits() => List.unmodifiable(_globalHits);
-  List<Track> getRetroSynthwaveHits() => List.unmodifiable(_synthwaveHits);
-  List<Track> getLofiChillHits() => List.unmodifiable(_lofiHits);
+  List<Track> getTrendingHindiHits() => List.unmodifiable(_trendingHindiHits);
 
   String _cleanHtml(String text) {
     return text
@@ -879,6 +1084,34 @@ class InnerTubeService {
     return null;
   }
 
+  Future<String?> resolveThumbnail(String title, String artist) async {
+    try {
+      final query = '$title $artist'.trim();
+      final autoUri = Uri.parse(
+          'https://www.jiosaavn.com/api.php?__call=autocomplete.get&query=${Uri.encodeComponent(query)}&_format=json&_marker=0&ctx=android');
+      final autoResp = await http
+          .get(autoUri, headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+          .timeout(const Duration(seconds: 4));
+
+      if (autoResp.statusCode == 200) {
+        final autoData = jsonDecode(autoResp.body);
+        final songs = (autoData['songs']?['data'] as List?) ?? [];
+        if (songs.isNotEmpty) {
+          var image = songs.first['image']?.toString() ?? '';
+          if (image.contains('150x150')) {
+            image = image.replaceAll('150x150', '500x500');
+          } else if (image.contains('50x50')) {
+            image = image.replaceAll('50x50', '500x500');
+          }
+          if (image.isNotEmpty) {
+            return image;
+          }
+        }
+      }
+    } catch (_) {}
+    return null;
+  }
+
   Future<String?> resolveAudioStreamUrl(Track track) async {
     final stream = await resolveAudioStream(track);
     return stream?.url;
@@ -950,9 +1183,10 @@ class InnerTubeService {
         final ms = (mins * 60 * 1000 + secs * 1000).round();
         final text = match.group(3)?.trim() ?? '';
         if (text.isNotEmpty) {
+          final romanized = RomanizeHindi.convert(text);
           lines.add(LyricLine(
             timestamp: Duration(milliseconds: ms),
-            text: text.toUpperCase(),
+            text: romanized.toUpperCase(),
           ));
         }
       }
@@ -968,9 +1202,10 @@ class InnerTubeService {
         .where((l) => l.isNotEmpty)
         .toList();
     for (int i = 0; i < rawLines.length; i++) {
+      final romanized = RomanizeHindi.convert(rawLines[i]);
       lines.add(LyricLine(
         timestamp: Duration(seconds: i * 5),
-        text: rawLines[i].toUpperCase(),
+        text: romanized.toUpperCase(),
       ));
     }
     return lines;
