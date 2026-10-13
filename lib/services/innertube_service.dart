@@ -5,6 +5,7 @@ import '../models/hit_album.dart';
 import '../models/lyric_line.dart';
 import '../models/track.dart';
 import '../utils/hindi_transliterate.dart';
+import 'soundcloud_service.dart';
 
 class ResolvedStream {
   final String url;
@@ -19,6 +20,8 @@ class ResolvedStream {
 }
 
 class InnerTubeService {
+  final SoundCloudService _soundCloud = SoundCloudService();
+
   final List<Track> _top10WeeklyTracks = [
     const Track(
       id: 'VaNhRJHr',
@@ -777,11 +780,85 @@ class InnerTubeService {
     ),
   ];
 
+  final List<Track> _pakistaniIndieHits = [
+    const Track(
+      id: 'sc_1235007724',
+      title: 'IRAADAY',
+      artist: 'ABDUL HANNAN, ROVALIO',
+      duration: Duration(minutes: 2, seconds: 13),
+      genreTag: 'PAKISTANI',
+      thumbnailUrl: 'https://i1.sndcdn.com/artworks-xjxSU2HywfmCmyCy-8jXwtw-t500x500.jpg',
+      audioUrl: 'sc:https://api-v2.soundcloud.com/media/soundcloud:tracks:1235007724/64cb8104-8635-48d8-ac23-b557b811489d/stream/progressive',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'sc_1211338369',
+      title: 'PASOORI (COKE STUDIO S14)',
+      artist: 'ALI SETHI, SHAE GILL',
+      duration: Duration(minutes: 4, seconds: 25),
+      genreTag: 'PAKISTANI',
+      thumbnailUrl: 'https://i1.sndcdn.com/artworks-EZcVE1UNex9cibiO-ryyNGw-t500x500.jpg',
+      audioUrl: 'sc:https://api-v2.soundcloud.com/media/soundcloud:tracks:1211338369/71f59ca5-3d8a-45a8-85f2-f2e841b65ff7/stream/progressive',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'sc_1533529555',
+      title: 'FAASLE',
+      artist: 'KAAVISH',
+      duration: Duration(minutes: 5, seconds: 24),
+      genreTag: 'PAKISTANI',
+      thumbnailUrl: 'https://i1.sndcdn.com/artworks-AXVTuIZwfhoUUK5N-zankVQ-t500x500.jpg',
+      audioUrl: 'sc:https://api-v2.soundcloud.com/media/soundcloud:tracks:1533529555/bf340bc8-f086-4088-9be7-9cf54a024ebe/stream/hls',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'sc_1163587066',
+      title: 'AFSANAY',
+      artist: 'YOUNG STUNNERS, TALHA ANJUM',
+      duration: Duration(minutes: 5, seconds: 43),
+      genreTag: 'PAKISTANI',
+      thumbnailUrl: 'https://i1.sndcdn.com/artworks-z1FAxhKH9tkHZrTZ-5IaNjw-t500x500.jpg',
+      audioUrl: 'sc:https://api-v2.soundcloud.com/media/soundcloud:tracks:1163587066/9c967917-ef27-4baa-94bd-a44d5c54c445/stream/hls',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'sc_742176016',
+      title: 'AISAY KAISAY',
+      artist: 'HASAN RAHEEM, ABDULLAH KASUMBI',
+      duration: Duration(minutes: 3, seconds: 18),
+      genreTag: 'PAKISTANI',
+      thumbnailUrl: 'https://i1.sndcdn.com/artworks-p0peBhHB74MZik3p-9KOCqg-t500x500.jpg',
+      audioUrl: 'sc:https://api-v2.soundcloud.com/media/soundcloud:tracks:742176016/a5a3983e-2ece-4322-b2b0-dc826a75e3b7/stream/progressive',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'sc_1319125147',
+      title: 'KAHANI SUNO 2.0',
+      artist: 'KAIFI KHALIL',
+      duration: Duration(minutes: 2, seconds: 53),
+      genreTag: 'PAKISTANI',
+      thumbnailUrl: 'https://i1.sndcdn.com/artworks-PKQHKsoQ1ypPQ6Bp-bGdBfA-t500x500.jpg',
+      audioUrl: 'sc:https://api-v2.soundcloud.com/media/soundcloud:tracks:1319125147/df984712-3a02-447d-8609-f6b71ea3b7d2/stream/hls',
+      lyrics: [],
+    ),
+    const Track(
+      id: 'sc_1635250929',
+      title: 'TU HAI KAHAN',
+      artist: 'AUR',
+      duration: Duration(minutes: 4, seconds: 14),
+      genreTag: 'PAKISTANI',
+      thumbnailUrl: 'https://i1.sndcdn.com/artworks-apNUPJ9jsYjwkyAM-c8ONrQ-t500x500.jpg',
+      audioUrl: 'sc:https://api-v2.soundcloud.com/media/soundcloud:tracks:1635250929/bf797470-6709-482b-9210-91475d7c6d40/stream/hls',
+      lyrics: [],
+    ),
+  ];
+
   List<Track> getDefaultTracks() => List.unmodifiable(_top10WeeklyTracks);
   List<Track> getTop10WeeklyTracks() => List.unmodifiable(_top10WeeklyTracks);
   List<HitAlbum> getHitAlbums() => List.unmodifiable(_hitAlbums);
   List<Track> getGlobalTopHits() => List.unmodifiable(_globalHits);
   List<Track> getTrendingHindiHits() => List.unmodifiable(_trendingHindiHits);
+  List<Track> getPakistaniIndieHits() => List.unmodifiable(_pakistaniIndieHits);
 
   String _cleanHtml(String text) {
     return text
@@ -820,12 +897,32 @@ class InnerTubeService {
       final futures = await Future.wait([
         _searchViaAutocomplete(cleanQuery),
         _searchViaGetResults(cleanQuery),
+        _soundCloud.searchTracks(cleanQuery, limit: 12),
       ]);
 
       final autoResults = futures[0];
       final getResults = futures[1];
+      final scResults = futures[2];
 
       final Map<String, Track> uniqueTracks = {};
+
+      final queryWords = cleanQuery
+          .toLowerCase()
+          .split(RegExp(r'\s+'))
+          .where((w) => w.length > 2)
+          .toList();
+
+      int calculateRelevance(Track t) {
+        int score = 0;
+        final titleLower = t.title.toLowerCase();
+        final artistLower = t.artist.toLowerCase();
+        for (final w in queryWords) {
+          if (titleLower.contains(w)) score += 3;
+          if (artistLower.contains(w)) score += 2;
+        }
+        return score;
+      }
+
       for (final t in autoResults) {
         uniqueTracks[t.id] = t;
       }
@@ -834,9 +931,20 @@ class InnerTubeService {
           uniqueTracks[t.id] = t;
         }
       }
+      for (final t in scResults) {
+        if (!uniqueTracks.containsKey(t.id)) {
+          uniqueTracks[t.id] = t;
+        }
+      }
 
       if (uniqueTracks.isNotEmpty) {
-        return uniqueTracks.values.toList();
+        final list = uniqueTracks.values.toList();
+        list.sort((a, b) {
+          final scoreB = calculateRelevance(b);
+          final scoreA = calculateRelevance(a);
+          return scoreB.compareTo(scoreA);
+        });
+        return list;
       }
 
       return _filterFallback(cleanQuery);
@@ -1048,6 +1156,17 @@ class InnerTubeService {
   }
 
   Future<ResolvedStream?> resolveAudioStream(Track track) async {
+    if (track.audioUrl != null && track.audioUrl!.startsWith('sc:')) {
+      final scStream = await _soundCloud.resolveStreamUrl(track.audioUrl!);
+      if (scStream != null && scStream.startsWith('http')) {
+        return ResolvedStream(
+          url: scStream,
+          totalBytes: 0,
+          contentType: 'audio/mp4',
+        );
+      }
+    }
+
     if (track.audioUrl != null && track.audioUrl!.startsWith('http')) {
       return ResolvedStream(
         url: track.audioUrl!,
@@ -1071,6 +1190,16 @@ class InnerTubeService {
       final searchResults = await searchTracks('${track.title} ${track.artist}');
       if (searchResults.isNotEmpty) {
         final first = searchResults.first;
+        if (first.audioUrl != null && first.audioUrl!.startsWith('sc:')) {
+          final scStream = await _soundCloud.resolveStreamUrl(first.audioUrl!);
+          if (scStream != null && scStream.startsWith('http')) {
+            return ResolvedStream(
+              url: scStream,
+              totalBytes: 0,
+              contentType: 'audio/mp4',
+            );
+          }
+        }
         if (first.audioUrl != null && first.audioUrl!.startsWith('http')) {
           return ResolvedStream(
             url: first.audioUrl!,

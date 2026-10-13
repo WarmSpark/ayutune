@@ -33,6 +33,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   List<HitAlbum> _hitAlbums = [];
   List<Track> _globalHits = [];
   List<Track> _hindiHits = [];
+  List<Track> _pakistaniHits = [];
 
   List<Track> _searchResults = [];
   String _selectedCategory = 'ALL';
@@ -47,6 +48,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
     _hitAlbums = _innerTube.getHitAlbums();
     _globalHits = _innerTube.getGlobalTopHits();
     _hindiHits = _innerTube.getTrendingHindiHits();
+    _pakistaniHits = _innerTube.getPakistaniIndieHits();
   }
 
   void _onSearch(String query) async {
@@ -374,6 +376,10 @@ class _CatalogScreenState extends State<CatalogScreen> {
         _buildShelfHeader('TRENDING HINDI & BOLLYWOOD HITS', 'DESI TOP CHARTS', theme, null),
         const SizedBox(height: 8),
         _buildTrackShelf(_hindiHits, theme, playerService),
+        const SizedBox(height: 16),
+        _buildShelfHeader('PAKISTANI & INDIE GEMS', 'COKE STUDIO & INDIE', theme, null),
+        const SizedBox(height: 8),
+        _buildTrackShelf(_pakistaniHits, theme, playerService),
         const SizedBox(height: 12),
       ],
     );
