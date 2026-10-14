@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/hit_album.dart';
@@ -36,6 +37,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
   List<Track> _pakistaniHits = [];
 
   List<Track> _searchResults = [];
+  List<HitAlbum> _albumResults = [];
+  String _searchFilter = 'SONGS';
   String _selectedCategory = 'ALL';
   bool _isSearching = false;
   bool _hasSearched = false;
@@ -49,6 +52,23 @@ class _CatalogScreenState extends State<CatalogScreen> {
     _globalHits = _innerTube.getGlobalTopHits();
     _hindiHits = _innerTube.getTrendingHindiHits();
     _pakistaniHits = _innerTube.getPakistaniIndieHits();
+    _checkOfflineStartup();
+  }
+
+  void _checkOfflineStartup() async {
+    try {
+      final result = await InternetAddress.lookup('google.com')
+          .timeout(const Duration(milliseconds: 1500));
+      if (result.isEmpty || result[0].rawAddress.isEmpty) {
+        if (mounted) {
+          setState(() => _selectedCategory = 'SAVED');
+        }
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() => _selectedCategory = 'SAVED');
+      }
+    }
   }
 
   void _onSearch(String query) async {
@@ -57,16 +77,21 @@ class _CatalogScreenState extends State<CatalogScreen> {
       setState(() {
         _hasSearched = false;
         _searchResults = [];
+        _albumResults = [];
         _isSearching = false;
       });
       return;
     }
 
     setState(() => _isSearching = true);
-    final results = await _innerTube.searchTracks(trimmed);
+    final results = await Future.wait([
+      _innerTube.searchTracks(trimmed),
+      _innerTube.searchAlbums(trimmed),
+    ]);
     if (!mounted) return;
     setState(() {
-      _searchResults = results;
+      _searchResults = results[0] as List<Track>;
+      _albumResults = results[1] as List<HitAlbum>;
       _hasSearched = true;
       _isSearching = false;
     });
@@ -77,6 +102,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
     setState(() {
       _hasSearched = false;
       _searchResults = [];
+      _albumResults = [];
       _isSearching = false;
     });
   }
@@ -1051,10 +1077,11 @@ class _CatalogScreenState extends State<CatalogScreen> {
   }
 
   Widget _buildSearchResultsGrid(RetroThemeData theme, AudioPlayerService playerService) {
-    if (_searchResults.isEmpty) {
+    final hasNoResults = _searchResults.isEmpty && _albumResults.isEmpty;
+    if (hasNoResults) {
       return Center(
         child: Text(
-          'NO TRACKS FOUND IN DATABASE',
+          'NO TRACKS OR ALBUMS FOUND IN DATABASE',
           style: TextStyle(
             fontFamily: 'monospace',
             fontSize: 12,
@@ -1073,14 +1100,48 @@ class _CatalogScreenState extends State<CatalogScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'RESULTS (${_searchResults.length})',
-                style: TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 11,
-                  fontWeight: FontWeight.bold,
-                  color: theme.accentTeal,
-                ),
+              Row(
+                children: [
+                  GestureDetector(
+                    onTap: () => setState(() => _searchFilter = 'SONGS'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _searchFilter == 'SONGS' ? theme.accentCoral : theme.panel,
+                        border: Border.all(color: theme.ink, width: 1.5),
+                      ),
+                      child: Text(
+                        'SONGS (${_searchResults.length})',
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: _searchFilter == 'SONGS' ? Colors.white : theme.ink,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  GestureDetector(
+                    onTap: () => setState(() => _searchFilter = 'ALBUMS'),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: _searchFilter == 'ALBUMS' ? theme.accentCoral : theme.panel,
+                        border: Border.all(color: theme.ink, width: 1.5),
+                      ),
+                      child: Text(
+                        'ALBUMS (${_albumResults.length})',
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: _searchFilter == 'ALBUMS' ? Colors.white : theme.ink,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
               GestureDetector(
                 onTap: _clearSearch,
@@ -1098,103 +1159,302 @@ class _CatalogScreenState extends State<CatalogScreen> {
           ),
         ),
         Expanded(
-          child: GridView.builder(
-            padding: const EdgeInsets.all(8),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 0.76,
-              crossAxisSpacing: 8,
-              mainAxisSpacing: 8,
-            ),
-            itemCount: _searchResults.length,
-            itemBuilder: (context, index) {
-              final track = _searchResults[index];
+          child: _searchFilter == 'SONGS'
+              ? _buildSongSearchResults(theme, playerService)
+              : _buildAlbumSearchResults(theme, playerService),
+        ),
+      ],
+    );
+  }
 
-              return Container(
-                decoration: BoxDecoration(
-                  color: theme.panel,
-                  border: Border.all(color: theme.ink, width: 2),
+  Widget _buildSongSearchResults(RetroThemeData theme, AudioPlayerService playerService) {
+    if (_searchResults.isEmpty) {
+      return Center(
+        child: Text(
+          'NO SONGS FOUND FOR THIS QUERY',
+          style: TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 11,
+            color: theme.inkDim,
+          ),
+        ),
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(8),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.76,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemCount: _searchResults.length,
+      itemBuilder: (context, index) {
+        final track = _searchResults[index];
+
+        return Container(
+          decoration: BoxDecoration(
+            color: theme.panel,
+            border: Border.all(color: theme.ink, width: 2),
+          ),
+          child: InkWell(
+            onTap: () => playerService.playTrack(track),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: double.infinity,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(color: theme.ink, width: 1.5),
+                    ),
+                  ),
+                  child: RetroThumbnail(
+                    url: track.thumbnailUrl,
+                    width: double.infinity,
+                    height: 120,
+                    theme: theme,
+                  ),
                 ),
-                child: InkWell(
-                  onTap: () => playerService.playTrack(track),
+                Padding(
+                  padding: const EdgeInsets.all(6),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: double.infinity,
-                        height: 120,
-                        decoration: BoxDecoration(
-                          border: Border(
-                            bottom: BorderSide(color: theme.ink, width: 1.5),
-                          ),
-                        ),
-                        child: RetroThumbnail(
-                          url: track.thumbnailUrl,
-                          width: double.infinity,
-                          height: 120,
-                          theme: theme,
+                      Text(
+                        track.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: theme.ink,
                         ),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.all(6),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              track.title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontFamily: 'monospace',
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: theme.ink,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              track.artist,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontFamily: 'monospace',
-                                fontSize: 9,
-                                color: theme.inkDim,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  _formatDuration(track.duration),
-                                  style: TextStyle(
-                                    fontFamily: 'monospace',
-                                    fontSize: 9,
-                                    color: theme.inkDim,
-                                  ),
-                                ),
-                                RetroButton(
-                                  label: 'PLAY',
-                                  theme: theme,
-                                  fontSize: 9,
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  onTap: () => playerService.playTrack(track),
-                                ),
-                              ],
-                            ),
-                          ],
+                      const SizedBox(height: 2),
+                      Text(
+                        track.artist,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 9,
+                          color: theme.inkDim,
                         ),
+                      ),
+                      const SizedBox(height: 6),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            _formatDuration(track.duration),
+                            style: TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 9,
+                              color: theme.inkDim,
+                            ),
+                          ),
+                          RetroButton(
+                            label: 'PLAY',
+                            theme: theme,
+                            fontSize: 9,
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            onTap: () => playerService.playTrack(track),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ),
-              );
-            },
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAlbumSearchResults(RetroThemeData theme, AudioPlayerService playerService) {
+    if (_albumResults.isEmpty) {
+      return Center(
+        child: Text(
+          'NO ALBUMS FOUND FOR THIS QUERY',
+          style: TextStyle(
+            fontFamily: 'monospace',
+            fontSize: 11,
+            color: theme.inkDim,
           ),
         ),
-      ],
+      );
+    }
+
+    return GridView.builder(
+      padding: const EdgeInsets.all(8),
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        childAspectRatio: 0.74,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+      ),
+      itemCount: _albumResults.length,
+      itemBuilder: (context, index) {
+        final album = _albumResults[index];
+
+        return Container(
+          decoration: BoxDecoration(
+            color: theme.panel,
+            border: Border.all(color: theme.ink, width: 2),
+          ),
+          child: InkWell(
+            onTap: () => _onAlbumTap(album, theme, playerService),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Stack(
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      height: 125,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(color: theme.ink, width: 1.5),
+                        ),
+                      ),
+                      child: RetroThumbnail(
+                        url: album.thumbnailUrl,
+                        width: double.infinity,
+                        height: 125,
+                        theme: theme,
+                      ),
+                    ),
+                    if (album.year.isNotEmpty)
+                      Positioned(
+                        top: 4,
+                        right: 4,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: theme.background,
+                            border: Border.all(color: theme.ink, width: 1),
+                          ),
+                          child: Text(
+                            album.year,
+                            style: TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              color: theme.accentYellow,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(6),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        album.title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: theme.ink,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        album.artist,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 9,
+                          color: theme.inkDim,
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      RetroButton(
+                        label: 'OPEN ALBUM',
+                        theme: theme,
+                        fontSize: 9,
+                        backgroundColor: theme.accentTeal,
+                        textColor: const Color(0xFF0C1626),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        onTap: () => _onAlbumTap(album, theme, playerService),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
+  }
+
+  void _onAlbumTap(
+    HitAlbum album,
+    RetroThemeData theme,
+    AudioPlayerService playerService,
+  ) async {
+    if (album.tracks.isNotEmpty) {
+      _showAlbumModal(album, theme, playerService);
+      return;
+    }
+
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => Center(
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          decoration: BoxDecoration(
+            color: theme.panel,
+            border: Border.all(color: theme.ink, width: 2),
+          ),
+          child: Text(
+            'RETRIEVING RETRO ALBUM TRACKS...',
+            style: TextStyle(
+              fontFamily: 'monospace',
+              fontSize: 11,
+              fontWeight: FontWeight.bold,
+              color: theme.accentTeal,
+            ),
+          ),
+        ),
+      ),
+    );
+
+    final fullAlbum = await _innerTube.fetchAlbumDetails(album.id);
+    if (!mounted) return;
+    Navigator.of(context).pop();
+
+    if (fullAlbum != null && fullAlbum.tracks.isNotEmpty) {
+      _showAlbumModal(fullAlbum, theme, playerService);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: theme.panel,
+          content: Text(
+            'ERROR: COULD NOT LOAD ALBUM TRACKS',
+            style: TextStyle(
+              fontFamily: 'monospace',
+              color: theme.accentCoral,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      );
+    }
   }
 
   Widget _buildSavedList(RetroThemeData theme, AudioPlayerService playerService) {
@@ -1228,70 +1488,109 @@ class _CatalogScreenState extends State<CatalogScreen> {
       );
     }
 
-    return ListView.builder(
-      padding: const EdgeInsets.all(8),
-      itemCount: savedTracks.length,
-      itemBuilder: (context, index) {
-        final track = savedTracks[index];
-
-        return Container(
-          margin: const EdgeInsets.only(bottom: 8),
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: theme.panel,
-            border: Border.all(color: theme.ink, width: 2),
-          ),
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+          color: theme.panel,
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              RetroThumbnail(
-                url: track.thumbnailUrl,
-                width: 48,
-                height: 48,
-                theme: theme,
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      track.title,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: theme.ink,
-                      ),
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      track.artist,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontFamily: 'monospace',
-                        fontSize: 10,
-                        color: theme.inkDim,
-                      ),
-                    ),
-                  ],
+              Text(
+                'SAVED TAPES (${savedTracks.length})',
+                style: TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: theme.accentTeal,
                 ),
               ),
               RetroButton(
-                label: 'PLAY',
+                label: 'PLAY ALL',
                 theme: theme,
-                fontSize: 10,
+                fontSize: 9,
                 backgroundColor: theme.accentTeal,
                 textColor: const Color(0xFF0C1626),
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                onTap: () => playerService.playTrack(track),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                onTap: () {
+                  playerService.playQueue(savedTracks);
+                  widget.onOpenPlayer();
+                },
               ),
             ],
           ),
-        );
-      },
+        ),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(8),
+            itemCount: savedTracks.length,
+            itemBuilder: (context, index) {
+              final track = savedTracks[index];
+
+              return Container(
+                margin: const EdgeInsets.only(bottom: 8),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: theme.panel,
+                  border: Border.all(color: theme.ink, width: 2),
+                ),
+                child: Row(
+                  children: [
+                    RetroThumbnail(
+                      url: track.thumbnailUrl,
+                      width: 48,
+                      height: 48,
+                      theme: theme,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            track.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: theme.ink,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            track.artist,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontFamily: 'monospace',
+                              fontSize: 10,
+                              color: theme.inkDim,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    RetroButton(
+                      label: 'PLAY',
+                      theme: theme,
+                      fontSize: 10,
+                      backgroundColor: theme.accentTeal,
+                      textColor: const Color(0xFF0C1626),
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      onTap: () {
+                        playerService.playQueue(savedTracks, startIndex: index);
+                        widget.onOpenPlayer();
+                      },
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 
@@ -1374,6 +1673,13 @@ class _CatalogScreenState extends State<CatalogScreen> {
                                 fontWeight: FontWeight.bold,
                                 color: theme.inkDim,
                               ),
+                            ),
+                            const SizedBox(width: 8),
+                            RetroThumbnail(
+                              url: track.thumbnailUrl,
+                              width: 36,
+                              height: 36,
+                              theme: theme,
                             ),
                             const SizedBox(width: 8),
                             Expanded(
@@ -2011,32 +2317,66 @@ class _CatalogScreenState extends State<CatalogScreen> {
                     final url = textController.text.trim();
                     if (url.isEmpty) return;
 
+                    if (!url.contains('spotify.com') && !url.contains('spotify:')) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          backgroundColor: theme.panel,
+                          content: Text(
+                            'ERROR: INVALID SPOTIFY LINK. ENTER A VALID PLAYLIST URL.',
+                            style: TextStyle(
+                              fontFamily: 'monospace',
+                              color: theme.accentCoral,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
                     setDialogState(() => isImporting = true);
                     PlaylistService().importSpotifyPlaylist(url).then((playlist) {
                       if (context.mounted) {
                         setDialogState(() => isImporting = false);
                         Navigator.of(context).pop();
-                        if (playlist != null) {
-                              setState(() {
-                                _selectedCategory = 'TAPES';
-                                _expandedPlaylist = playlist;
-                              });
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  backgroundColor: theme.panel,
-                                  content: Text(
-                                    'IMPORTED ${playlist.tracks.length} TRACKS INTO "${playlist.name}"',
-                                    style: TextStyle(
-                                      fontFamily: 'monospace',
-                                      color: theme.accentTeal,
-                                    ),
-                                  ),
+                        if (playlist != null && playlist.tracks.isNotEmpty) {
+                          setState(() {
+                            _hasSearched = false;
+                            _searchController.clear();
+                            _selectedCategory = 'TAPES';
+                            _expandedPlaylist = playlist;
+                          });
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: theme.panel,
+                              content: Text(
+                                'IMPORTED ${playlist.tracks.length} TRACKS INTO "${playlist.name}"',
+                                style: TextStyle(
+                                  fontFamily: 'monospace',
+                                  color: theme.accentTeal,
+                                  fontWeight: FontWeight.bold,
                                 ),
-                              );
-                            }
-                          }
-                        });
-                      },
+                              ),
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              backgroundColor: theme.panel,
+                              content: Text(
+                                'ERROR: COULD NOT IMPORT SPOTIFY PLAYLIST. ENSURE PLAYLIST IS PUBLIC.',
+                                style: TextStyle(
+                                  fontFamily: 'monospace',
+                                  color: theme.accentCoral,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          );
+                        }
+                      }
+                    });
+                  },
                     ),
               ],
             );
@@ -2051,74 +2391,78 @@ class _CatalogScreenState extends State<CatalogScreen> {
     AudioPlayerService playerService,
     Track currentTrack,
   ) {
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.panel,
-        border: Border(
-          top: BorderSide(color: theme.ink, width: 2.5),
+    return GestureDetector(
+      onTap: widget.onOpenPlayer,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        decoration: BoxDecoration(
+          color: theme.panel,
+          border: Border(
+            top: BorderSide(color: theme.ink, width: 2.5),
+          ),
         ),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      child: Row(
-        children: [
-          RetroThumbnail(
-            url: currentTrack.thumbnailUrl,
-            width: 44,
-            height: 44,
-            theme: theme,
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  currentTrack.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: theme.ink,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  currentTrack.artist,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 10,
-                    color: theme.inkDim,
-                  ),
-                ),
-              ],
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+        child: Row(
+          children: [
+            RetroThumbnail(
+              url: currentTrack.thumbnailUrl,
+              width: 44,
+              height: 44,
+              theme: theme,
             ),
-          ),
-          const SizedBox(width: 8),
-          RetroButton(
-            label: playerService.isPlaying ? 'PAUSE' : 'PLAY',
-            theme: theme,
-            fontSize: 10,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            backgroundColor: theme.accentCoral,
-            textColor: Colors.white,
-            onTap: () => playerService.togglePlayPause(),
-          ),
-          const SizedBox(width: 6),
-          RetroButton(
-            label: 'OPEN',
-            theme: theme,
-            fontSize: 10,
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-            backgroundColor: theme.accentTeal,
-            textColor: const Color(0xFF0C1626),
-            onTap: widget.onOpenPlayer,
-          ),
-        ],
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    currentTrack.title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: theme.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    currentTrack.artist,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 10,
+                      color: theme.inkDim,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            RetroButton(
+              label: playerService.isPlaying ? 'PAUSE' : 'PLAY',
+              theme: theme,
+              fontSize: 10,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              backgroundColor: theme.accentCoral,
+              textColor: Colors.white,
+              onTap: () => playerService.togglePlayPause(),
+            ),
+            const SizedBox(width: 6),
+            RetroButton(
+              label: 'OPEN',
+              theme: theme,
+              fontSize: 10,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              backgroundColor: theme.accentTeal,
+              textColor: const Color(0xFF0C1626),
+              onTap: widget.onOpenPlayer,
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1340,5 +1340,123 @@ class InnerTubeService {
     return lines;
   }
 
+  Future<List<HitAlbum>> searchAlbums(String query) async {
+    try {
+      final cleanQuery = query.trim();
+      if (cleanQuery.isEmpty) return [];
+
+      final uri = Uri.parse(
+          'https://www.jiosaavn.com/api.php?__call=search.getAlbumResults&q=${Uri.encodeComponent(cleanQuery)}&_format=json&_marker=0&ctx=android&p=1&n=20');
+      final response = await http
+          .get(uri, headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+          .timeout(const Duration(seconds: 8));
+
+      if (response.statusCode != 200) return [];
+      final data = jsonDecode(response.body);
+      final results = (data['results'] as List?) ?? [];
+      final List<HitAlbum> albums = [];
+
+      for (final item in results) {
+        final id = item['albumid']?.toString() ?? item['id']?.toString() ?? '';
+        if (id.isEmpty) continue;
+
+        final title = _cleanHtml(item['title']?.toString() ?? item['name']?.toString() ?? 'ALBUM').toUpperCase();
+        final artist = _cleanHtml(item['music']?.toString() ?? item['artist']?.toString() ?? item['primary_artists']?.toString() ?? 'UNKNOWN').toUpperCase();
+        final year = item['year']?.toString() ?? '';
+        var image = item['image']?.toString() ?? '';
+        if (image.contains('150x150')) {
+          image = image.replaceAll('150x150', '500x500');
+        }
+
+        albums.add(
+          HitAlbum(
+            id: id,
+            title: title,
+            artist: artist,
+            year: year,
+            thumbnailUrl: image,
+            tracks: const [],
+          ),
+        );
+      }
+      return albums;
+    } catch (_) {
+      return [];
+    }
+  }
+
+  Future<HitAlbum?> fetchAlbumDetails(String albumId) async {
+    try {
+      final uri = Uri.parse(
+          'https://www.jiosaavn.com/api.php?__call=content.getAlbumDetails&albumid=$albumId&_format=json&_marker=0&ctx=android');
+      final response = await http
+          .get(uri, headers: {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'})
+          .timeout(const Duration(seconds: 8));
+
+      if (response.statusCode != 200) return null;
+      final data = jsonDecode(response.body);
+      final title = _cleanHtml(data['title']?.toString() ?? data['name']?.toString() ?? 'ALBUM').toUpperCase();
+      final artist = _cleanHtml(data['primary_artists']?.toString() ?? 'VARIOUS ARTISTS').toUpperCase();
+      final year = data['year']?.toString() ?? '';
+      var image = data['image']?.toString() ?? '';
+      if (image.contains('150x150')) {
+        image = image.replaceAll('150x150', '500x500');
+      }
+
+      final songs = (data['songs'] as List?) ?? [];
+      final List<Track> tracks = [];
+      for (final item in songs) {
+        final id = item['id']?.toString() ?? '';
+        if (id.isEmpty) continue;
+        final songTitle = _cleanHtml(item['song']?.toString() ?? item['title']?.toString() ?? 'UNTITLED').toUpperCase();
+        final songArtist = _cleanHtml(item['primary_artists']?.toString() ?? item['singers']?.toString() ?? artist).toUpperCase();
+        final enc = item['encrypted_media_url']?.toString();
+        final preview = item['media_preview_url']?.toString();
+        final streamUrl = _decryptSaavnUrl(enc) ?? preview;
+        if (streamUrl == null || streamUrl.isEmpty) continue;
+
+        int durSecs = 180;
+        final rawDuration = item['duration'];
+        if (rawDuration != null) {
+          durSecs = int.tryParse(rawDuration.toString()) ?? 180;
+        }
+
+        var songImg = item['image']?.toString() ?? image;
+        if (songImg.contains('150x150')) {
+          songImg = songImg.replaceAll('150x150', '500x500');
+        }
+
+        tracks.add(
+          Track(
+            id: id,
+            title: songTitle,
+            artist: songArtist,
+            duration: Duration(seconds: durSecs),
+            genreTag: (item['language']?.toString() ?? 'ALBUM').toUpperCase(),
+            audioUrl: streamUrl,
+            thumbnailUrl: songImg.isNotEmpty ? songImg : null,
+            isOffline: false,
+            lyrics: [
+              LyricLine(timestamp: Duration.zero, text: 'PLAYING: $songTitle'),
+              LyricLine(timestamp: const Duration(seconds: 4), text: 'ARTIST: $songArtist'),
+              const LyricLine(timestamp: Duration(seconds: 8), text: 'SYNCHRONIZING RETRO LYRICS...'),
+            ],
+          ),
+        );
+      }
+
+      return HitAlbum(
+        id: albumId,
+        title: title,
+        artist: artist,
+        year: year,
+        thumbnailUrl: image,
+        tracks: tracks,
+      );
+    } catch (_) {
+      return null;
+    }
+  }
+
   void dispose() {}
 }

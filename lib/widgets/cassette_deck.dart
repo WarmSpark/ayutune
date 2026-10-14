@@ -32,26 +32,6 @@ class ScrewPainter extends CustomPainter {
   bool shouldRepaint(covariant ScrewPainter oldDelegate) => false;
 }
 
-class PixelGridPainter extends CustomPainter {
-  final Color gridColor;
-
-  PixelGridPainter({required this.gridColor});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = gridColor
-      ..strokeWidth = 1.0;
-
-    const step = 7.0;
-    for (double y = 0; y < size.height; y += step) {
-      canvas.drawLine(Offset(0, y), Offset(size.width, y), paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant PixelGridPainter oldDelegate) => false;
-}
 
 class CassetteSpoolPainter extends CustomPainter {
   final Color reelColor;
@@ -190,7 +170,6 @@ class _CassetteDeckState extends State<CassetteDeck>
       padding: const EdgeInsets.all(8),
       child: Stack(
         children: [
-          _buildPixelatedBackground(),
           Positioned(
             top: 2,
             left: 2,
@@ -236,7 +215,7 @@ class _CassetteDeckState extends State<CassetteDeck>
             ),
           ),
           Padding(
-            padding: const EdgeInsets.only(top: 14, bottom: 2),
+            padding: const EdgeInsets.only(top: 10, bottom: 2),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -248,44 +227,6 @@ class _CassetteDeckState extends State<CassetteDeck>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPixelatedBackground() {
-    if (widget.thumbnailUrl == null || widget.thumbnailUrl!.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Positioned.fill(
-      child: ClipRect(
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            Opacity(
-              opacity: 0.24,
-              child: ColorFiltered(
-                colorFilter: ColorFilter.mode(
-                  widget.theme.accentCoral.withValues(alpha: 0.4),
-                  BlendMode.color,
-                ),
-                child: Image.network(
-                  widget.thumbnailUrl!,
-                  fit: BoxFit.cover,
-                  filterQuality: FilterQuality.none,
-                  cacheWidth: 36,
-                  cacheHeight: 36,
-                  errorBuilder: (context, error, stackTrace) => const SizedBox.shrink(),
-                ),
-              ),
-            ),
-            CustomPaint(
-              painter: PixelGridPainter(
-                gridColor: widget.theme.ink.withValues(alpha: 0.05),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -460,7 +401,7 @@ class _CassetteDeckState extends State<CassetteDeck>
       width: double.infinity,
       height: 68,
       decoration: BoxDecoration(
-        color: widget.theme.background.withValues(alpha: 0.82),
+        color: widget.theme.background,
         border: Border.all(color: widget.theme.ink, width: 2),
       ),
       child: Stack(
