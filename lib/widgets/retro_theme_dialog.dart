@@ -124,7 +124,7 @@ class _RetroThemeDialogState extends State<RetroThemeDialog> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'PREVIEW: AYUTUNE TAPE',
+                          'PREVIEW: VELVETUNE TAPE',
                           style: TextStyle(
                             fontFamily: 'monospace',
                             fontSize: 10,

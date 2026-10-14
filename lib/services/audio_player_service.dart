@@ -9,7 +9,7 @@ import 'innertube_service.dart';
 class AudioPlayerService extends ChangeNotifier {
   late final AudioPlayer _player;
   final InnerTubeService _innerTube = InnerTubeService();
-  final AyutuneAudioHandler? audioHandler;
+  final VelvetuneAudioHandler? audioHandler;
   AndroidLoudnessEnhancer? _loudnessEnhancer;
   AndroidEqualizer? _equalizer;
   bool _isAudioFx = true;

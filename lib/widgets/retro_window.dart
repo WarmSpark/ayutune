@@ -10,7 +10,7 @@ class RetroWindowHeader extends StatelessWidget {
   const RetroWindowHeader({
     super.key,
     required this.theme,
-    this.title = 'ayutune.apk',
+    this.title = 'velvetune.apk',
     this.onFilesTap,
     this.onThemeTap,
   });

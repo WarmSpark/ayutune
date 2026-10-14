@@ -10,15 +10,15 @@ import 'services/playlist_service.dart';
 import 'theme/theme_provider.dart';
 import 'widgets/retro_window.dart';
 
-late final AyutuneAudioHandler audioHandler;
+late final VelvetuneAudioHandler audioHandler;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   audioHandler = await AudioService.init(
-    builder: () => AyutuneAudioHandler(),
+    builder: () => VelvetuneAudioHandler(),
     config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.warmspark.ayutune.ayutune.channel.audio',
-      androidNotificationChannelName: 'Ayutune Playback',
+      androidNotificationChannelId: 'com.warmspark.velvetune.channel.audio',
+      androidNotificationChannelName: 'Velvetune Playback',
       androidNotificationOngoing: true,
       androidStopForegroundOnPause: true,
       androidNotificationIcon: 'drawable/ic_music_note',
@@ -34,32 +34,32 @@ Future<void> main() async {
           create: (_) => AudioPlayerService(audioHandler: audioHandler),
         ),
       ],
-      child: const AyutuneApp(),
+      child: const VelvetuneApp(),
     ),
   );
 }
 
-class AyutuneApp extends StatelessWidget {
-  const AyutuneApp({super.key});
+class VelvetuneApp extends StatelessWidget {
+  const VelvetuneApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      title: 'Ayutune',
+      title: 'Velvetune',
       debugShowCheckedModeBanner: false,
-      home: AyutuneHomeScreen(),
+      home: VelvetuneHomeScreen(),
     );
   }
 }
 
-class AyutuneHomeScreen extends StatefulWidget {
-  const AyutuneHomeScreen({super.key});
+class VelvetuneHomeScreen extends StatefulWidget {
+  const VelvetuneHomeScreen({super.key});
 
   @override
-  State<AyutuneHomeScreen> createState() => _AyutuneHomeScreenState();
+  State<VelvetuneHomeScreen> createState() => _VelvetuneHomeScreenState();
 }
 
-class _AyutuneHomeScreenState extends State<AyutuneHomeScreen> {
+class _VelvetuneHomeScreenState extends State<VelvetuneHomeScreen> {
   int _selectedTabIndex = 1;
 
   @override

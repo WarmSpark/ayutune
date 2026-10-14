@@ -1,4 +1,4 @@
-package com.warmspark.ayutune.ayutune
+package com.warmspark.velvetune
 
 import android.Manifest
 import android.content.pm.PackageManager

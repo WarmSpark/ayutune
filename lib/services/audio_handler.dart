@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:audio_service/audio_service.dart';
 import '../models/track.dart';
 
-class AyutuneAudioHandler extends BaseAudioHandler with SeekHandler {
+class VelvetuneAudioHandler extends BaseAudioHandler with SeekHandler {
   Future<void> Function()? onPlay;
   Future<void> Function()? onPause;
   Future<void> Function()? onNext;
@@ -18,7 +18,7 @@ class AyutuneAudioHandler extends BaseAudioHandler with SeekHandler {
   }) {
     mediaItem.add(MediaItem(
       id: track.id,
-      album: track.genreTag.isNotEmpty ? track.genreTag : 'Ayutune Mixtape',
+      album: track.genreTag.isNotEmpty ? track.genreTag : 'Velvetune Mixtape',
       title: track.title,
       artist: track.artist,
       duration: duration ?? track.duration,

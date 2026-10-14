@@ -1,4 +1,4 @@
-# Ayutune
+# Velvetune
 
 A retro early-computing styled music player APK for Android with real-time audio streaming.
 

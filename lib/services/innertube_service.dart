@@ -1260,7 +1260,7 @@ class InnerTubeService {
       final getUri = Uri.parse(
           'https://lrclib.net/api/get?track_name=${Uri.encodeComponent(cleanTitle)}&artist_name=${Uri.encodeComponent(cleanArtist)}');
       final res1 = await http
-          .get(getUri, headers: {'User-Agent': 'Ayutune/1.0'})
+          .get(getUri, headers: {'User-Agent': 'Velvetune/1.0'})
           .timeout(const Duration(seconds: 4));
 
       if (res1.statusCode == 200) {
@@ -1278,7 +1278,7 @@ class InnerTubeService {
       final searchUri = Uri.parse(
           'https://lrclib.net/api/search?q=${Uri.encodeComponent('$cleanTitle $cleanArtist')}');
       final res2 = await http
-          .get(searchUri, headers: {'User-Agent': 'Ayutune/1.0'})
+          .get(searchUri, headers: {'User-Agent': 'Velvetune/1.0'})
           .timeout(const Duration(seconds: 4));
 
       if (res2.statusCode == 200) {
