@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/lyric_line.dart';
 import '../models/playlist.dart';
 import '../models/track.dart';
-import 'innertube_service.dart';
+import 'music_catalog_service.dart';
 
 class PlaylistService {
   static final PlaylistService _instance = PlaylistService._internal();
@@ -71,7 +71,7 @@ class PlaylistService {
       bool playlistUpdated = false;
       for (final track in playlist.tracks) {
         if (track.thumbnailUrl == null || track.thumbnailUrl!.isEmpty) {
-          final thumb = await InnerTubeService().resolveThumbnail(track.title, track.artist);
+          final thumb = await MusicCatalogService().resolveThumbnail(track.title, track.artist);
           if (thumb != null && thumb.isNotEmpty) {
             updatedTracks.add(track.copyWith(thumbnailUrl: thumb));
             playlistUpdated = true;
@@ -168,7 +168,7 @@ class PlaylistService {
         futures.add(() async {
           String? resolvedThumb = initialThumb;
           if (resolvedThumb == null || resolvedThumb.isEmpty) {
-            resolvedThumb = await InnerTubeService().resolveThumbnail(title, artist);
+            resolvedThumb = await MusicCatalogService().resolveThumbnail(title, artist);
           }
           return Track(
             id: 'sp_${playlistId}_$i',

@@ -5,7 +5,7 @@ import '../models/hit_album.dart';
 import '../models/playlist.dart';
 import '../models/track.dart';
 import '../services/audio_player_service.dart';
-import '../services/innertube_service.dart';
+import '../services/music_catalog_service.dart';
 import '../services/offline_service.dart';
 import '../services/playlist_service.dart';
 import '../theme/retro_theme.dart';
@@ -27,7 +27,7 @@ class CatalogScreen extends StatefulWidget {
 }
 
 class _CatalogScreenState extends State<CatalogScreen> {
-  final InnerTubeService _innerTube = InnerTubeService();
+  final MusicCatalogService _catalogService = MusicCatalogService();
   final TextEditingController _searchController = TextEditingController();
 
   List<Track> _top10Tracks = [];
@@ -47,11 +47,11 @@ class _CatalogScreenState extends State<CatalogScreen> {
   @override
   void initState() {
     super.initState();
-    _top10Tracks = _innerTube.getTop10WeeklyTracks();
-    _hitAlbums = _innerTube.getHitAlbums();
-    _globalHits = _innerTube.getGlobalTopHits();
-    _hindiHits = _innerTube.getTrendingHindiHits();
-    _pakistaniHits = _innerTube.getPakistaniIndieHits();
+    _top10Tracks = _catalogService.getTop10WeeklyTracks();
+    _hitAlbums = _catalogService.getHitAlbums();
+    _globalHits = _catalogService.getGlobalTopHits();
+    _hindiHits = _catalogService.getTrendingHindiHits();
+    _pakistaniHits = _catalogService.getPakistaniIndieHits();
     _checkOfflineStartup();
   }
 
@@ -85,8 +85,8 @@ class _CatalogScreenState extends State<CatalogScreen> {
 
     setState(() => _isSearching = true);
     final results = await Future.wait([
-      _innerTube.searchTracks(trimmed),
-      _innerTube.searchAlbums(trimmed),
+      _catalogService.searchTracks(trimmed),
+      _catalogService.searchAlbums(trimmed),
     ]);
     if (!mounted) return;
     setState(() {
@@ -116,7 +116,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
   @override
   void dispose() {
     _searchController.dispose();
-    _innerTube.dispose();
+    _catalogService.dispose();
     super.dispose();
   }
 
@@ -1434,7 +1434,7 @@ class _CatalogScreenState extends State<CatalogScreen> {
       ),
     );
 
-    final fullAlbum = await _innerTube.fetchAlbumDetails(album.id);
+    final fullAlbum = await _catalogService.fetchAlbumDetails(album.id);
     if (!mounted) return;
     Navigator.of(context).pop();
 

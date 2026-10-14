@@ -19,7 +19,7 @@ class ResolvedStream {
   });
 }
 
-class InnerTubeService {
+class MusicCatalogService {
   final SoundCloudService _soundCloud = SoundCloudService();
 
   final List<Track> _top10WeeklyTracks = [

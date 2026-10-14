@@ -4,11 +4,11 @@ import 'package:flutter/foundation.dart';
 import 'package:just_audio/just_audio.dart';
 import '../models/track.dart';
 import 'audio_handler.dart';
-import 'innertube_service.dart';
+import 'music_catalog_service.dart';
 
 class AudioPlayerService extends ChangeNotifier {
   late final AudioPlayer _player;
-  final InnerTubeService _innerTube = InnerTubeService();
+  final MusicCatalogService _catalogService = MusicCatalogService();
   final VelvetuneAudioHandler? audioHandler;
   AndroidLoudnessEnhancer? _loudnessEnhancer;
   AndroidEqualizer? _equalizer;
@@ -68,7 +68,7 @@ class AudioPlayerService extends ChangeNotifier {
 
   Track get currentTrack {
     if (_queue.isEmpty || _currentIndex >= _queue.length) {
-      return _innerTube.getDefaultTracks().first;
+      return _catalogService.getDefaultTracks().first;
     }
     return _queue[_currentIndex];
   }
@@ -98,7 +98,7 @@ class AudioPlayerService extends ChangeNotifier {
   }
 
   void _initQueue() {
-    _queue = List.from(_innerTube.getDefaultTracks());
+    _queue = List.from(_catalogService.getDefaultTracks());
   }
 
   void _listenToPlayerStreams() {
@@ -167,7 +167,7 @@ class AudioPlayerService extends ChangeNotifier {
 
   Future<void> _autoplaySimilar() async {
     try {
-      final similarTracks = await _innerTube.getSimilarTracks(currentTrack);
+      final similarTracks = await _catalogService.getSimilarTracks(currentTrack);
       if (similarTracks.isNotEmpty) {
         final nextTrack = similarTracks.first;
         _queue.add(nextTrack);
@@ -224,7 +224,7 @@ class AudioPlayerService extends ChangeNotifier {
         await _player.setAudioSource(AudioSource.file(track.audioUrl!));
         await _player.play();
       } else {
-        final streamData = await _innerTube.resolveAudioStream(track);
+        final streamData = await _catalogService.resolveAudioStream(track);
         if (streamData != null) {
           if (track.audioUrl == null || track.audioUrl!.isEmpty) {
             _queue[_currentIndex] = track.copyWith(audioUrl: streamData.url);
@@ -251,7 +251,7 @@ class AudioPlayerService extends ChangeNotifier {
   void _fetchLyricsInBackground(Track track) async {
     if (track.lyrics.length > 3) return;
     try {
-      final lyrics = await _innerTube.fetchLyrics(track.title, track.artist);
+      final lyrics = await _catalogService.fetchLyrics(track.title, track.artist);
       if (lyrics.isNotEmpty &&
           _currentIndex < _queue.length &&
           _queue[_currentIndex].id == track.id) {
@@ -345,7 +345,7 @@ class AudioPlayerService extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final results = await _innerTube.searchTracks(query);
+      final results = await _catalogService.searchTracks(query);
       if (results.isNotEmpty) {
         _queue = List.from(results);
         _currentIndex = 0;
